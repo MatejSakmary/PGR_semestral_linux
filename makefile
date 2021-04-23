@@ -6,3 +6,4 @@ OBJDIR = build
 build/semestral: src/main.cpp 
 	$(CC) $(CFLAGS) -I$(INCLUDES) src/main.cpp vendor/glad/glad.c -o build/semestral
 
+
