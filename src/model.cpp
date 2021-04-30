@@ -81,8 +81,8 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
             for( unsigned int j = 0; j < face.mNumIndices; j++)
                 indicies.push_back(face.mIndices[j]);
         }
-
-
+    }
+    return Mesh(verticies, indicies, textures);
 }
 
 
