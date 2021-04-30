@@ -10,6 +10,17 @@
 #include "camera.h"
 #include "glm/glm.hpp"
 
+static Camera* camera = NULL;
+
+static float lastX = 0.0f;
+static float lastY = 0.0f;
+
+static float deltaTime = 0.0f;
+static float lastFrame = 0.0f;
+static float pressDelay = -1.0f;
+static bool firstFrame = true;
+static bool mouseControl = false;
+
 bool show_demo_window = true;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -71,6 +82,74 @@ void ImGuiDraw()
     }
 }
 
+void mouseCallback(GLFWwindow* window, double x, double y)
+{
+    if(!mouseControl) return;
+
+    if(firstFrame)
+    {
+        lastX = x;
+        lastY = y;
+        firstFrame = false;
+    }
+
+    float xoffset = x - lastX;
+    float yoffset = y - lastY;
+    lastX = x;
+    lastY = y;
+    std::cout << "taking camera position pressDelay is: " << pressDelay << std::endl;
+    camera->updateFrontVec(xoffset,yoffset);
+}
+
+void processInput(GLFWwindow* window)
+{
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
+    pressDelay -= deltaTime;
+
+    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS && (pressDelay < 0))
+	{
+        if (mouseControl)
+            std::cout << "mouse control is now enabled" << std::endl;
+        else
+            std::cout << "mouse control is now disabled" << std::endl;
+
+		pressDelay = 0.5f;
+		mouseControl = !mouseControl;
+		if(mouseControl == true) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+		camera->switchToStatic(1);
+	}
+	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+		camera->switchToStatic(2);
+	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		camera->forward(deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		camera->back(deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		camera->left(deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		camera->right(deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+		camera->up(deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		camera->down(deltaTime);
+	}
+}
+
 int main()
 {
     const char *glsl_version = "#version 130";
@@ -88,6 +167,8 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSetCursorPosCallback(window, mouseCallback);
+
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -95,8 +176,10 @@ int main()
         return -1;
     }
     glViewport(0, 0, 1920, 1080);
+    lastX = 1920/2;
+    lastY = 1080/2;
 
-    /* setup imgui context */
+    /* setup imgui context ---------------*/
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
@@ -107,18 +190,23 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    /* prepare simple triangle ---------------*/
     unsigned int VBO,VAO;
     setupTriangle(VBO, VAO);
-    Camera camera(glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 0.0f, 0.0f),glm::vec3(0.0f, 0.0f, 0.0f));
-    camera.getViewMatrix();
+
+    /* compile shader ---------------*/
     Shader dummy_shader(
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.vert",
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.frag");
-
+    
+    /* setup camera ---------------*/
+	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
+				        glm::vec3(0.0f, 0.0f, -1.0f),
+				        glm::vec3(0.0f, 1.0f, 0.0f));
     while (!glfwWindowShouldClose(window))
     {
 
-        glfwPollEvents();
+        processInput(window);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -138,6 +226,7 @@ int main()
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
+        glfwPollEvents();
     }
 
     ImGui_ImplOpenGL3_Shutdown();
