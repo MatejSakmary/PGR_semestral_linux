@@ -10,6 +10,7 @@
 #include "camera.h"
 #include "glm/glm.hpp"
 
+
 static Camera* camera = NULL;
 
 static float lastX = 0.0f;
@@ -203,6 +204,7 @@ int main()
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
 				        glm::vec3(0.0f, 0.0f, -1.0f),
 				        glm::vec3(0.0f, 1.0f, 0.0f));
+
     while (!glfwWindowShouldClose(window))
     {
 

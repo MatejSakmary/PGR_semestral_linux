@@ -1,6 +1,6 @@
 clang++
 %c -std=c11
 %cpp -std=c++14
-%c %cpp -lGL -lglfw
-%h %hpp -lGL -lglfw
+%c %cpp -lGL -lglfw -lassimp
+%h %hpp -lGL -lglfw -lassimp
 -Ivendor
