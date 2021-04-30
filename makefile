@@ -6,7 +6,7 @@ IMGUI_DIR = vendor/imgui
 EXE = semestral
 SRC_DIR = src
 
-SOURCES = src/main.cpp vendor/glad/glad.c src/shader.cpp src/camera.cpp
+SOURCES = src/main.cpp vendor/glad/glad.c src/shader.cpp src/camera.cpp src/mesh.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 
