@@ -41,10 +41,11 @@ void Model::processNode(aiNode *node, const aiScene *scene)
 
 Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
 {
-    std::vector<Vertex> verticies;
-    std::vector<unsigned int> indicies;
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
     std::vector<Texture> textures;
 
+    std::cout << "processing mesh with " << mesh->mNumVertices << " vertices" << std::endl;
     for( unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
         Vertex vertex;
@@ -54,11 +55,10 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         vector.z = mesh->mVertices[i].z;
         vertex.Position = vector;
         
-        glm::vec3 normal;
-        normal.x = mesh->mNormals[i].x;
-        normal.y = mesh->mNormals[i].y;
-        normal.z = mesh->mNormals[i].z;
-        vertex.Normal = normal;
+        vector.x = mesh->mNormals[i].x;
+        vector.y = mesh->mNormals[i].y;
+        vector.z = mesh->mNormals[i].z;
+        vertex.Normal = vector;
 
         // check if model contains texture coordinates
         if(mesh->mTextureCoords[0])
@@ -73,16 +73,20 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
         {
             vertex.TexCoords = glm::vec2(0.0f, 0.0f);
         }
+        vertices.push_back(vertex);
+    }
 
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    std::cout << "this mesh has " << mesh->mNumFaces << " faces" << std::endl;
+    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+    {
+        aiFace face = mesh->mFaces[i];
+        // take each index out of one face and push it to mesh representation
+        for( unsigned int j = 0; j < face.mNumIndices; j++)
         {
-            aiFace face = mesh->mFaces[i];
-            // take each index out of one face and push it to mesh representation
-            for( unsigned int j = 0; j < face.mNumIndices; j++)
-                indicies.push_back(face.mIndices[j]);
+            indices.push_back(face.mIndices[j]);
         }
     }
-    return Mesh(verticies, indicies, textures);
+    return Mesh(vertices, indices, textures);
 }
 
 

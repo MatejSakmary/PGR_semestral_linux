@@ -8,7 +8,11 @@
 #include <GLFW/glfw3.h>
 #include "shader.h"
 #include "camera.h"
+#include "model.h"
+
 #include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 
 static Camera* camera = NULL;
@@ -95,10 +99,9 @@ void mouseCallback(GLFWwindow* window, double x, double y)
     }
 
     float xoffset = x - lastX;
-    float yoffset = y - lastY;
+    float yoffset = lastY - y;
     lastX = x;
     lastY = y;
-    std::cout << "taking camera position pressDelay is: " << pressDelay << std::endl;
     camera->updateFrontVec(xoffset,yoffset);
 }
 
@@ -176,6 +179,7 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    // glEnable(GL_DEPTH_TEST);
     glViewport(0, 0, 1920, 1080);
     lastX = 1920/2;
     lastY = 1080/2;
@@ -205,6 +209,23 @@ int main()
 				        glm::vec3(0.0f, 0.0f, -1.0f),
 				        glm::vec3(0.0f, 1.0f, 0.0f));
 
+    Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/magic_idol/magic_idol_mesh.FBX");
+
+    Vertex vertex;
+    vertex.Position =glm::vec3(-0.5f, -0.5f, 0.3f);
+    vertex.TexCoords = glm::vec2(0,0);
+    vertex.Normal = glm::vec3(0,0,0);
+    std::vector<Vertex> Triangle;
+    Triangle.push_back(vertex);
+    vertex.Position =glm::vec3(0.5f, -0.5f, 0.0f);
+    Triangle.push_back(vertex);
+    vertex.Position =glm::vec3(0.0f, 0.5f, 0.0f);
+    Triangle.push_back(vertex);
+
+    std::vector<unsigned int> indices{0,1,2};
+    std::vector<Texture> textures;
+
+    Mesh testMesh(Triangle, indices, textures);
     while (!glfwWindowShouldClose(window))
     {
 
@@ -213,6 +234,7 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGuiIO& io = ImGui::GetIO();
 
         ImGuiDraw();
         ImGui::Render();
@@ -223,8 +245,14 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         dummy_shader.use();
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0,3);
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
+        glm::mat4 CameraProjMatrix = projectionMatrix * camera->getViewMatrix();
+        dummy_shader.setMat4fv("PVMmatrix", CameraProjMatrix);
+        // testMesh.Draw(dummy_shader);
+        // glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
+        // glm::mat4 CameraProjMatrix = projectionMatrix * camera->getViewMatrix();
+        // dummy_shader.setMat4fv("PVMmatrix", projectionMatrix);
+        rock.Draw(dummy_shader);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
