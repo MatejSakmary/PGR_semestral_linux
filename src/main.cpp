@@ -30,9 +30,9 @@ static bool mouseControl = false;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 
-static float xrotation = 224.6;
+static float xrotation = 0;
 static float yrotation = 0;
-static float zrotation = 87.8;
+static float zrotation = 0;
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO)
 {
@@ -221,7 +221,7 @@ int main()
 				        glm::vec3(0.0f, 0.0f, -1.0f),
 				        glm::vec3(0.0f, 1.0f, 0.0f));
 
-    Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/magic_idol/magic_idol_mesh.FBX");
+    Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
 
     Vertex vertex;
     vertex.Position =glm::vec3(-0.5f, -0.5f, 0.3f);
@@ -263,7 +263,11 @@ int main()
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
         glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
         glm::mat4 cameraMatrix     = camera->getViewMatrix();
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f, 0.1f, 0.1f));
+        // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
+	    modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
+	    modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
         fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         fragLightShader.setMat4fv("Model", modelMatrix);
         fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));

@@ -92,7 +92,7 @@ void Mesh::Draw(Shader &shader)
             number = std::to_string(specularNum++);
         }
         // this sets texture sampler with name and corresponding number in the shader
-        shader.setFloat(("material."+ name + number).c_str(), i);
+        shader.setFloat((name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
     glActiveTexture(GL_TEXTURE0);

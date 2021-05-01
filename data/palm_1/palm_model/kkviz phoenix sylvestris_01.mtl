@@ -1,0 +1,85 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 06.04.2021 15:56:16
+
+newmtl kkviz_phoenix_sylvestris_01_trunk
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka kkviz phoenix sylvestris trunk_01 alb.jpg
+	map_Kd kkviz phoenix sylvestris trunk_01 alb.jpg
+	map_bump kkviz phoenix sylvestris trunk_01 nrm.jpg
+	bump kkviz phoenix sylvestris trunk_01 nrm.jpg
+	map_refl kkviz phoenix sylvestris trunk_01 spr.jpg
+
+newmtl kkviz_phoenix_sylvestris_01_old_leaves
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka kkviz phoenix sylvestris leaves_02 alb.jpg
+	map_Kd kkviz phoenix sylvestris leaves_02 alb.jpg
+	map_d kkviz phoenix sylvestris leaves_02 opa.jpg
+	map_bump kkviz phoenix sylvestris leaves_02 nrm.jpg
+	bump kkviz phoenix sylvestris leaves_02 nrm.jpg
+
+newmtl kkviz_phoenix_sylvestris_01_branches1
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka kkviz phoenix sylvestris branches_01 alb.jpg
+	map_Kd kkviz phoenix sylvestris branches_01 alb.jpg
+	map_bump kkviz phoenix sylvestris branches_01 nrm.jpg
+	bump kkviz phoenix sylvestris branches_01 nrm.jpg
+
+newmtl kkviz_phoenix_sylvestris_01_branches2
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka kkviz phoenix sylvestris branches_02 alb.jpg
+	map_Kd kkviz phoenix sylvestris branches_02 alb.jpg
+	map_bump kkviz phoenix sylvestris branches_02 nrm.jpg
+	bump kkviz phoenix sylvestris branches_02 nrm.jpg
+
+newmtl kkviz_phoenix_sylvestris_01_leaves_F
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka kkviz phoenix sylvestris leaves_01 alb 01.jpg
+	map_Kd kkviz phoenix sylvestris leaves_01 alb 01.jpg
+	map_d kkviz phoenix sylvestris leaves_01 opa.jpg
+	map_bump kkviz phoenix sylvestris leaves_01 nrm.jpg
+	bump kkviz phoenix sylvestris leaves_01 nrm.jpg
