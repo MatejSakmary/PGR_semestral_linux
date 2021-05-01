@@ -16,6 +16,7 @@
 
 
 static Camera* camera = NULL;
+static float lightAngle = 0.0f;
 
 static float lastX = 0.0f;
 static float lastY = 0.0f;
@@ -26,9 +27,12 @@ static float pressDelay = -1.0f;
 static bool firstFrame = true;
 static bool mouseControl = false;
 
-bool show_demo_window = true;
 bool show_another_window = false;
-ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+
+static float xrotation = 224.6;
+static float yrotation = 0;
+static float zrotation = 87.8;
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO)
 {
@@ -49,42 +53,49 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO)
 
 void ImGuiDraw()
 {
-    // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-    if (show_demo_window)
-        ImGui::ShowDemoWindow(&show_demo_window);
+	{
+		static int counter = 0;
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-    {
-        static float f = 0.0f;
-        static int counter = 0;
+		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+		ImGui::Text("use WASD to move around");
+		ImGui::Text("use SPACE to fly up CTRL to fly downwards");
+		ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Camera Parameters", &show_another_window);
 
-        ImGui::Text("This is some useful text.");          // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Demo Window", &show_demo_window); // Edit bools storing our window open/close state
-        ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::SliderFloat("light angle", &lightAngle, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);             // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float *)&clear_color); // Edit 3 floats representing a color
+		if (ImGui::Button("Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			camera->switchToStatic(1);
+		ImGui::SameLine();
+		if (ImGui::Button("Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			camera->switchToStatic(2);
 
-        if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
+		ImGui::SliderFloat("portalx angle", &xrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("portaly angle", &yrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("portalz angle", &zrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+	}
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
-    }
-
-    // 3. Show another simple window.
-    if (show_another_window)
-    {
-        ImGui::Begin("Another Window", &show_another_window); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Hello from another window!");
-        if (ImGui::Button("Close Me"))
-            show_another_window = false;
-        ImGui::End();
-    }
+	// 3. Show another simple window.
+	if (show_another_window)
+	{
+		glm::vec3 cameraPos = camera->getPos();
+		ImGui::Begin("Camera Parameters", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		if (ImGui::Button("Close"))
+			show_another_window = false;
+		ImGui::Text("Camera position is");
+		ImGui::Text("x: %f", cameraPos.x);
+		ImGui::SameLine();
+		ImGui::Text("y: %f", cameraPos.y);
+		ImGui::SameLine();
+		ImGui::Text("z: %f", cameraPos.z);
+		ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
+		ImGui::End();
+	}
 }
 
 void mouseCallback(GLFWwindow* window, double x, double y)
@@ -179,10 +190,7 @@ int main()
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-    // glEnable(GL_DEPTH_TEST);
-    glViewport(0, 0, 1920, 1080);
-    lastX = 1920/2;
-    lastY = 1080/2;
+    glEnable(GL_DEPTH_TEST);
 
     /* setup imgui context ---------------*/
     IMGUI_CHECKVERSION();
@@ -200,10 +208,14 @@ int main()
     setupTriangle(VBO, VAO);
 
     /* compile shader ---------------*/
-    Shader dummy_shader(
+    Shader dummyShader(
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.vert",
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.frag");
     
+    Shader fragLightShader(
+        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.vert",
+        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.frag");
+
     /* setup camera ---------------*/
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
 				        glm::vec3(0.0f, 0.0f, -1.0f),
@@ -242,17 +254,22 @@ int main()
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        dummy_shader.use();
+        /* objects rendering */
+        fragLightShader.use();
+        glm::vec3 lightPos = glm::vec3(20.0f * glm::sin(glm::radians(lightAngle)),20.0f, 
+                                       20.0f * glm::cos(glm::radians(lightAngle)));
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        glm::mat4 CameraProjMatrix = projectionMatrix * camera->getViewMatrix();
-        dummy_shader.setMat4fv("PVMmatrix", CameraProjMatrix);
-        // testMesh.Draw(dummy_shader);
-        // glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        // glm::mat4 CameraProjMatrix = projectionMatrix * camera->getViewMatrix();
-        // dummy_shader.setMat4fv("PVMmatrix", projectionMatrix);
-        rock.Draw(dummy_shader);
+        glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
+        glm::mat4 cameraMatrix     = camera->getViewMatrix();
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f, 0.1f, 0.1f));
+        fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+        fragLightShader.setMat4fv("Model", modelMatrix);
+        fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
+        fragLightShader.setVec3("lightPos", lightPos);
+        rock.Draw(fragLightShader);
+        /* ---------------------------------------------------*/
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
