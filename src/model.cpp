@@ -116,6 +116,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType 
         texture.id = TextureFromFile(str.C_Str(), directory, false);
         texture.type = typeName;
         texture.path = str.C_Str();
+
         textures.push_back(texture);
     }
     return textures;
@@ -125,7 +126,7 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial *mat, aiTextureType 
 unsigned int Model::TextureFromFile(const char* path, const std::string& directory, bool gamma)
 {
     std::string filename = std::string(path);
-    filename = filename.substr(filename.find_last_of('\\')+1);
+    filename = filename.substr(filename.find_last_of("/\\")+1);
     filename = directory + "_textures/" + filename;
 
     unsigned int textureID;

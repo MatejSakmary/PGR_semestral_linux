@@ -221,7 +221,8 @@ int main()
 				        glm::vec3(0.0f, 0.0f, -1.0f),
 				        glm::vec3(0.0f, 1.0f, 0.0f));
 
-    Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
+    // Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
+    Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
 
     Vertex vertex;
     vertex.Position =glm::vec3(-0.5f, -0.5f, 0.3f);
@@ -267,12 +268,12 @@ int main()
         modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
 	    modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
 	    modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f, 0.5f, 0.5f));
         fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         fragLightShader.setMat4fv("Model", modelMatrix);
         fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
         fragLightShader.setVec3("lightPos", lightPos);
-        rock.Draw(fragLightShader);
+        portal.Draw(fragLightShader);
         /* ---------------------------------------------------*/
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

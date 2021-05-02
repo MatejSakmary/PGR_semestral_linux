@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = -lglfw -lGL -ldl -lassimp
+CXXFLAGS = -lglfw -lGL -ldl -lassimp 
 INCLUDES = -Ivendor/ -Ivendor/imgui -Ivendor/imgui/backends -Ivendor/glad -Ivendor/stb_image -DIMGUI_IMPL_OPENGL_LOADER_GLAD 
 OBJDIR = build/
 IMGUI_DIR = vendor/imgui
