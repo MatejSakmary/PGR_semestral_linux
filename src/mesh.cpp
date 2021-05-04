@@ -1,7 +1,7 @@
 #include "mesh.h"
 
 
-void checkGLError(const char *where = 0, int line = 0) {
+static void checkGLError(const char *where = 0, int line = 0) {
   GLenum err = glGetError();
   if(err == GL_NONE)
     return;

@@ -14,6 +14,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+#include "stb_image.h"
 
 static Camera* camera = NULL;
 static float lightAngle = 0.0f;
@@ -33,6 +34,39 @@ ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 static float xrotation = 0;
 static float yrotation = 0;
 static float zrotation = 0;
+static int indices_offset = 0;
+
+static void checkGLError(const char *where = 0, int line = 0) {
+  GLenum err = glGetError();
+  if(err == GL_NONE)
+    return;
+
+  std::string errString = "<unknown>";
+  switch(err) {
+    case GL_INVALID_ENUM:
+      errString = "GL_INVALID_ENUM";
+      break;
+    case GL_INVALID_VALUE:
+      errString = "GL_INVALID_VALUE";
+      break;
+    case GL_INVALID_OPERATION:
+      errString = "GL_INVALID_OPERATION";
+      break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      errString = "GL_INVALID_FRAMEBUFFER_OPERATION";
+      break;
+    case GL_OUT_OF_MEMORY:
+      errString = "GL_OUT_OF_MEMORY";
+      break;
+    default:;
+  }
+  if(where == 0 || *where == 0)
+    std::cerr << "GL error occurred: " << errString << std::endl;
+  else
+    std::cerr << "GL error occurred in " << where << ":" << line << ": " << errString << std::endl;
+}
+
+#define CHECK_GL_ERROR() do { checkGLError(__FUNCTION__, __LINE__); } while(0)
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO)
 {
@@ -75,6 +109,7 @@ void ImGuiDraw()
 		ImGui::SliderFloat("portalx angle", &xrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::SliderFloat("portaly angle", &yrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::SliderFloat("portalz angle", &zrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderInt("indices offset", &indices_offset, 0, 400);            // Edit 1 float using a slider from 0.0f to 1.0f
 		
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
@@ -165,6 +200,103 @@ void processInput(GLFWwindow* window)
 	}
 }
 
+unsigned int prepareHeightTexture(const char* path)
+{
+    /* prepare height map */
+    int width, height, nrComponents;
+    unsigned char *heightMap = stbi_load(path,&width,&height,&nrComponents, 0);
+    if(heightMap)
+    {
+        std::cout << "LOADED HEIGHT MAP" << std::endl;
+    } else {
+        std::cout << "FAILED TO LOAD HEIGHT MAP" << std::endl;
+        return 0;
+    }
+    GLenum format;
+    if(nrComponents == 1)
+        format = GL_RED;
+    else if (nrComponents == 3)
+        format = GL_RGB;
+    else if (nrComponents == 4)
+        format = GL_RGBA;
+
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, heightMap);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /* I want exact values of the height map */
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    stbi_image_free(heightMap);
+    return textureID;
+}
+
+unsigned int prepareTerrainMesh(unsigned int TERRAIN_DEPTH, unsigned int TERRAIN_WIDTH){
+    unsigned int VAO, VBO, EBO;
+    const int TOTAL = TERRAIN_DEPTH * TERRAIN_WIDTH;
+    const int TOTAL_INDICES = TOTAL * 2 * 3; 
+    unsigned int indices[TOTAL_INDICES];
+    glm::vec3 vertices[TOTAL];
+
+    int count = 0;
+    for(unsigned int i = 0; i < TERRAIN_DEPTH; i++)
+    {
+        for(unsigned int j = 0; j < TERRAIN_WIDTH; j++)
+        {
+            vertices[count++] = glm::vec3((float(i)/(TERRAIN_WIDTH-1)),
+                                          (0),
+                                          (float(j)/(TERRAIN_DEPTH-1)));
+            // std::cout << "adding vertex : " << vertices[count-1].x << " "
+            //                                 << vertices[count-1].y << " " 
+            //                                 << vertices[count-1].z << " " << std::endl;
+
+        }
+    }
+
+    unsigned int index = 0;
+    for(unsigned int i = 0; i < TERRAIN_DEPTH-1; i++)
+    {
+        for(unsigned int j = 0; j < TERRAIN_WIDTH-1; j++)
+        {
+            int i0 = j + i*TERRAIN_WIDTH;
+            int i1 = i0 + 1;
+            int i2 = i0+TERRAIN_WIDTH;
+            int i3 = i2+1;
+            indices[index++] = i0;
+            std::cout << "adding indices : " << i0 << " ";
+            indices[index++] = i2;
+            std::cout << i2 << " ";
+            indices[index++] = i1;
+            std::cout << i1 << " "<< std::endl;;
+            indices[index++] = i1;
+            std::cout << "adding indices : " << i1 << " ";
+            indices[index++] = i2;
+            std::cout << i2 << " ";
+            indices[index++] = i3;
+            std::cout << i3 << " "<< std::endl;;
+        }
+    }
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    
+    glBindVertexArray(VAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER,VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    return VAO;
+}
+
 int main()
 {
     const char *glsl_version = "#version 130";
@@ -203,9 +335,6 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    /* prepare simple triangle ---------------*/
-    unsigned int VBO,VAO;
-    setupTriangle(VBO, VAO);
 
     /* compile shader ---------------*/
     Shader dummyShader(
@@ -215,6 +344,10 @@ int main()
     Shader fragLightShader(
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.vert",
         "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.frag");
+    
+    Shader heightMapShader(
+        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/height.vert",
+        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.frag");
 
     /* setup camera ---------------*/
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
@@ -222,23 +355,30 @@ int main()
 				        glm::vec3(0.0f, 1.0f, 0.0f));
 
     // Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
-    Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
+    // Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
+    Model terrain("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/terrain_floor/generated_crater.fbx");
 
-    Vertex vertex;
-    vertex.Position =glm::vec3(-0.5f, -0.5f, 0.3f);
-    vertex.TexCoords = glm::vec2(0,0);
-    vertex.Normal = glm::vec3(0,0,0);
-    std::vector<Vertex> Triangle;
-    Triangle.push_back(vertex);
-    vertex.Position =glm::vec3(0.5f, -0.5f, 0.0f);
-    Triangle.push_back(vertex);
-    vertex.Position =glm::vec3(0.0f, 0.5f, 0.0f);
-    Triangle.push_back(vertex);
+    const int TERRAIN_WIDTH = 300;
+    const int TERRAIN_DEPTH = 300;
+    const int TERRAIN_HALF_WIDTH = TERRAIN_WIDTH>>1;
+    const int TERRAIN_HALF_DEPTH = TERRAIN_DEPTH>>1;
 
-    std::vector<unsigned int> indices{0,1,2};
-    std::vector<Texture> textures;
+    float scale = 0.4;
+    float half_scale = scale/2.0f;
 
-    Mesh testMesh(Triangle, indices, textures);
+    const int TOTAL = (TERRAIN_WIDTH * TERRAIN_DEPTH);
+    const int TOTAL_INDICIES = TOTAL*2*3;
+    std::string fileName = "/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/terrain_floor/displaced_floor/heightmap.tga";
+
+    unsigned int texID = prepareHeightTexture(fileName.c_str());
+    CHECK_GL_ERROR();
+    unsigned int VAO = prepareTerrainMesh(TERRAIN_DEPTH, TERRAIN_WIDTH);
+    CHECK_GL_ERROR();
+    heightMapShader.use();
+    glUniform2i(glGetUniformLocation(heightMapShader.ID,"HALF_TERRAIN_SIZE"), TERRAIN_HALF_WIDTH, TERRAIN_HALF_DEPTH);
+    glUniform1f(glGetUniformLocation(heightMapShader.ID,"scale"), scale );
+    glUniform1f(glGetUniformLocation(heightMapShader.ID,"half_scale"), half_scale );
+
     while (!glfwWindowShouldClose(window))
     {
 
@@ -258,23 +398,41 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* objects rendering */
-        fragLightShader.use();
-        glm::vec3 lightPos = glm::vec3(20.0f * glm::sin(glm::radians(lightAngle)),20.0f, 
-                                       20.0f * glm::cos(glm::radians(lightAngle)));
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
-        glm::mat4 cameraMatrix     = camera->getViewMatrix();
-        // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
-	    modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
-	    modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f, 0.5f, 0.5f));
-        fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-        fragLightShader.setMat4fv("Model", modelMatrix);
-        fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
-        fragLightShader.setVec3("lightPos", lightPos);
-        portal.Draw(fragLightShader);
+        // fragLightShader.use();
+        // glm::vec3 lightPos = glm::vec3(20.0f * glm::sin(glm::radians(lightAngle)),20.0f, 
+        //                                20.0f * glm::cos(glm::radians(lightAngle)));
+        // glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
+        // glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
+        // glm::mat4 cameraMatrix     = camera->getViewMatrix();
+        // // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
+        // modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
+	    // modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
+	    // modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        // modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
+        // fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+        // fragLightShader.setMat4fv("Model", modelMatrix);
+        // fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
+        // fragLightShader.setVec3("lightPos", lightPos);
+        // terrain.Draw(fragLightShader);
         /* ---------------------------------------------------*/
+        /* load height map */
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        heightMapShader.use();
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
+        glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        modelMatrix                = glm::scale(modelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));
+        glm::mat4 cameraMatrix     = camera->getViewMatrix();
+        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+
+        glBindVertexArray(VAO);
+
+        glActiveTexture(GL_TEXTURE0);
+        glUniform1i(glGetUniformLocation(heightMapShader.ID,"heightMapTexture"), 0 );
+        glBindTexture(GL_TEXTURE_2D, texID);
+
+        glDrawElements(GL_TRIANGLES, (TERRAIN_WIDTH-1)*(TERRAIN_DEPTH-1)*2*3, GL_UNSIGNED_INT,(void*)(sizeof(unsigned int)*0));
+        CHECK_GL_ERROR();
+
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
