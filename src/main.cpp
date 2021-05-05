@@ -9,6 +9,7 @@
 #include "shader.h"
 #include "camera.h"
 #include "model.h"
+#include "utils.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -36,41 +37,9 @@ static float yrotation = 0;
 static float zrotation = 0;
 static int indices_offset = 0;
 
-static void checkGLError(const char *where = 0, int line = 0) {
-  GLenum err = glGetError();
-  if(err == GL_NONE)
-    return;
-
-  std::string errString = "<unknown>";
-  switch(err) {
-    case GL_INVALID_ENUM:
-      errString = "GL_INVALID_ENUM";
-      break;
-    case GL_INVALID_VALUE:
-      errString = "GL_INVALID_VALUE";
-      break;
-    case GL_INVALID_OPERATION:
-      errString = "GL_INVALID_OPERATION";
-      break;
-    case GL_INVALID_FRAMEBUFFER_OPERATION:
-      errString = "GL_INVALID_FRAMEBUFFER_OPERATION";
-      break;
-    case GL_OUT_OF_MEMORY:
-      errString = "GL_OUT_OF_MEMORY";
-      break;
-    default:;
-  }
-  if(where == 0 || *where == 0)
-    std::cerr << "GL error occurred: " << errString << std::endl;
-  else
-    std::cerr << "GL error occurred in " << where << ":" << line << ": " << errString << std::endl;
-}
-
-#define CHECK_GL_ERROR() do { checkGLError(__FUNCTION__, __LINE__); } while(0)
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO)
 {
-
     float vertices[] = {
     -0.5f, -0.5f, 0.0f,
      0.5f, -0.5f, 0.0f,
@@ -268,17 +237,17 @@ unsigned int prepareTerrainMesh(unsigned int TERRAIN_DEPTH, unsigned int TERRAIN
             int i2 = i0+TERRAIN_WIDTH;
             int i3 = i2+1;
             indices[index++] = i0;
-            std::cout << "adding indices : " << i0 << " ";
+            // std::cout << "adding indices : " << i0 << " ";
             indices[index++] = i2;
-            std::cout << i2 << " ";
+            // std::cout << i2 << " ";
             indices[index++] = i1;
-            std::cout << i1 << " "<< std::endl;;
+            // std::cout << i1 << " "<< std::endl;;
             indices[index++] = i1;
-            std::cout << "adding indices : " << i1 << " ";
+            // std::cout << "adding indices : " << i1 << " ";
             indices[index++] = i2;
-            std::cout << i2 << " ";
+            // std::cout << i2 << " ";
             indices[index++] = i3;
-            std::cout << i3 << " "<< std::endl;;
+            // std::cout << i3 << " "<< std::endl;;
         }
     }
     glGenVertexArrays(1, &VAO);
@@ -363,7 +332,7 @@ int main()
     const int TERRAIN_HALF_WIDTH = TERRAIN_WIDTH>>1;
     const int TERRAIN_HALF_DEPTH = TERRAIN_DEPTH>>1;
 
-    float scale = 0.4;
+    float scale = 0.2;
     float half_scale = scale/2.0f;
 
     const int TOTAL = (TERRAIN_WIDTH * TERRAIN_DEPTH);
@@ -419,8 +388,8 @@ int main()
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         heightMapShader.use();
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        modelMatrix                = glm::scale(modelMatrix, glm::vec3(10.0f, 10.0f, 10.0f));
+        glm::mat4 modelMatrix      = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
+        modelMatrix                = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         glm::mat4 cameraMatrix     = camera->getViewMatrix();
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
 

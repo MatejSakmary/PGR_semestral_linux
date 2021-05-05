@@ -1,12 +1,14 @@
 /* this is heavily (almost copied) inspired by Learn OpenGL from Joey de Vries 
    https://learnopengl.com/Model-Loading/Mesh */
 
+#pragma once
 #include <iostream>
 #include <vector>
 #include <string>
 
 #include "shader.h"
 #include "glm/glm.hpp"
+#include "utils.h"
 
 struct Vertex {
     glm::vec3 Position;
