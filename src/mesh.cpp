@@ -66,7 +66,7 @@ void Mesh::Draw(Shader &shader)
         }
 
         // this sets texture sampler with name and corresponding number in the shader
-        shader.setInt((name + number).c_str(), i);
+        shader.setInt(("material." + name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
         CHECK_GL_ERROR();
     }

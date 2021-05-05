@@ -19,6 +19,8 @@
 
 static Camera *camera = NULL;
 static float lightAngle = 0.0f;
+static float lightHeight = 1.0f;
+static float lightRadius = 1.0f;
 
 static float lastX = 0.0f;
 static float lastY = 0.0f;
@@ -32,7 +34,7 @@ static bool mouseControl = false;
 bool show_another_window = false;
 ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 
-static float xrotation = 0;
+static float xrotation = 270;
 static float yrotation = 0;
 static float zrotation = 0;
 static int indices_offset = 0;
@@ -53,8 +55,7 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
     glEnableVertexAttribArray(0);
 }
 
-void ImGuiDraw()
-{
+void ImGuiDraw() {
     {
         static int counter = 0;
 
@@ -85,8 +86,10 @@ void ImGuiDraw()
                            360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
         ImGui::SliderFloat("portalz angle", &zrotation, 0.0f,
                            360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderInt("indices offset", &indices_offset, 0,
-                         400);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("light height", &lightHeight, 0,
+                           20);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("light radius", &lightRadius, 0,
+                           20);            // Edit 1 float using a slider from 0.0f to 1.0f
 
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                     ImGui::GetIO().Framerate);
@@ -174,8 +177,8 @@ void processInput(GLFWwindow *window) {
     }
 }
 
-Model prepareTerrainModel(unsigned int terrainResolution, const char* heightTexPath,
-                          const char* normalTexPath, const char* diffuseTexPath) {
+Model prepareTerrainModel(unsigned int terrainResolution, const char *heightTexPath,
+                          const char *normalTexPath, const char *diffuseTexPath) {
     std::vector<Vertex> vertices;
     std::vector<Texture> textures;
     std::vector<unsigned int> indices;
@@ -281,7 +284,8 @@ int main() {
                         glm::vec3(0.0f, 0.0f, -1.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
+    Model palm(
+            "/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
     // Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
 
     float scale = 0.2;
@@ -291,11 +295,11 @@ int main() {
     std::string normalFileName = "../data/terrain_floor/displaced_floor/normalmap.PNG";
     std::string diffuseFileName = "../data/terrain_floor/displaced_floor/colormap.png";
 
-    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
-                                        diffuseFileName.c_str());
-    heightMapShader.use();
-    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
-    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
+//    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
+//                                        diffuseFileName.c_str());
+//    heightMapShader.use();
+//    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
+//    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -316,38 +320,70 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* objects rendering */
-        // fragLightShader.use();
-        // glm::vec3 lightPos = glm::vec3(20.0f * glm::sin(glm::radians(lightAngle)),20.0f, 
-        //                                20.0f * glm::cos(glm::radians(lightAngle)));
-        // glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        // glm::mat4 modelMatrix      = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
-        // glm::mat4 cameraMatrix     = camera->getViewMatrix();
-        // // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
-        // modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
-        // modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
-        // modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        // modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
-        // fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-        // fragLightShader.setMat4fv("Model", modelMatrix);
-        // fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
-        // fragLightShader.setVec3("lightPos", lightPos);
-        // terrain.Draw(fragLightShader);
+        fragLightShader.use();
+        glm::vec3 lightPos = glm::vec3(lightRadius * glm::sin(glm::radians(lightAngle)), lightHeight,
+                                       lightRadius * glm::cos(glm::radians(lightAngle)));
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
+                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
+        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
+        glm::mat4 cameraMatrix = camera->getViewMatrix();
+        // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
+
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
+        modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
+
+        fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+        fragLightShader.setMat4fv("Model", modelMatrix);
+        fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
+
+        fragLightShader.setVec3("cameraPosition", camera->getPos());
+        fragLightShader.setFloat("material.shininess", 30.0f);
+        fragLightShader.setInt("usedLights", 2);
+        fragLightShader.setInt("lights[0].type", 2);
+        fragLightShader.setInt("lights[1].type", 1);
+
+//        fragLightShader.setVec3("lights[0].direction", lightPos);
+//        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
+//        fragLightShader.setVec3("lights[0].diffuse", 0.4f, 0.4f, 0.4f);
+//        fragLightShader.setVec3("lights[0].specular", 0.3f, 0.3f, 0.3f);
+
+        fragLightShader.setVec3("lights[1].position", lightPos);
+        fragLightShader.setVec3("lights[1].ambient", 0.05f, 0.05f, 0.05f);
+        fragLightShader.setVec3("lights[1].diffuse", 0.4f, 0.1f, 0.1f);
+        fragLightShader.setVec3("lights[1].specular", 0.3f, 0.1f, 0.1f);
+        fragLightShader.setFloat("lights[1].constant", 1.0f);
+        fragLightShader.setFloat("lights[1].linear", 0.09f);
+        fragLightShader.setFloat("lights[1].quadratic", 0.032f);
+
+        fragLightShader.setVec3("lights[0].position", camera->getPos());
+        fragLightShader.setVec3("lights[0].direction", camera->getFront());
+        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
+        fragLightShader.setVec3("lights[0].diffuse", 0.1f, 0.4f, 0.1f);
+        fragLightShader.setVec3("lights[0].specular", 0.1f, 0.3f, 0.1f);
+        fragLightShader.setFloat("lights[0].constant", 1.0f);
+        fragLightShader.setFloat("lights[0].linear", 0.09f);
+        fragLightShader.setFloat("lights[0].quadratic", 0.032f);
+        fragLightShader.setFloat("lights[0].cutOff", glm::cos(glm::radians(12.5f)));
+        fragLightShader.setFloat("lights[0].outerCutOff", glm::cos(glm::radians(20.0f)));
+        palm.Draw(fragLightShader);
         /* ---------------------------------------------------*/
         /* load height map */
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        heightMapShader.use();
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y, 0.1f,
-                                                      100.0f);
-        glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 50.0f));
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
-        glm::mat4 cameraMatrix = camera->getViewMatrix();
-        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-        heightMapShader.setMat4fv("Model", modelMatrix);
-        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)), 100.0f,
-                                       100.0f * glm::cos(glm::radians(lightAngle)));
-        heightMapShader.setVec3("lightPos", lightPos);
-        terrain.Draw(heightMapShader);
-        CHECK_GL_ERROR();
+//        heightMapShader.use();
+//        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y, 0.1f,
+//                                                      100.0f);
+//        glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 50.0f));
+//        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
+//        glm::mat4 cameraMatrix = camera->getViewMatrix();
+//        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+//        heightMapShader.setMat4fv("Model", modelMatrix);
+//        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)), 100.0f,
+//                                       100.0f * glm::cos(glm::radians(lightAngle)));
+//        heightMapShader.setVec3("lightPos", lightPos);
+//        terrain.Draw(heightMapShader);
+//        CHECK_GL_ERROR();
 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

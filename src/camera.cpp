@@ -79,3 +79,7 @@ float  Camera::getPitch() {
 float Camera::getYaw() {
 	return yaw;
 }
+
+glm::vec3 Camera::getFront() {
+    return this->m_front;
+}

@@ -27,6 +27,7 @@ public:
 	void switchToStatic(int i);
 	void updateFrontVec(float xoffset, float yoffset);
 	glm::vec3 getPos();
+    glm::vec3 getFront();
 	float getYaw();
 	float getPitch();
 	glm::mat4 getViewMatrix();
