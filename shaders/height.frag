@@ -17,13 +17,19 @@ void main()
 	// means up, but i want (0, 1, 0) to be up, because the terrain is
 	// rotated by 90 degrees along X axis, and I don't want to compute
 	// tangent space
-	vec3 normal = normalize(texture(normalMapTexture, texCoord).xzy);
+	vec3 normal = (texture(normalMapTexture, texCoord)).rbg;
+	normal = normalize(normal * 2.0 - 1.0);
+    // I also must invert the z (previously y) component, sinze openGL
+	// reads texture coordinate reversed from how textures are created
+	normal = normal * vec3(1.0, 1.0, -1.0);
 	vec3 lightDir = normalize(lightPos - fragPos);
 
     vec4 texColor = texture(colorMapTexture, texCoord);
 	float diff = max(dot(normal, lightDir), 0.0);
-	vec4 ambient = vec4(0.2, 0.2, 0.2, 1.0) * texColor;
+	vec4 ambient = vec4(0.1, 0.1, 0.1, 1.0) * texColor;
 	vec4 diffuse = diff * texColor;
 	vec4 result = (ambient + diffuse);
+//	result = (vec4(lightDir,1.0) + vec4(1.0, 1.0, 1.0, 1.0))*0.5;
+//    result = diff * vec4(0.5, 0.5,0.5,1.0); //* vec4(fragPos.x+0.1,fragPos.y+0.1,fragPos.z+0.1,1.0);
 	FragColor = result;
 }

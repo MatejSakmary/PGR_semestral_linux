@@ -392,13 +392,15 @@ int main()
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         heightMapShader.use();
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        glm::mat4 modelMatrix      = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
+        glm::mat4 modelMatrix      = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 50.0f));
         modelMatrix                = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         glm::mat4 cameraMatrix     = camera->getViewMatrix();
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
         glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)),100.0f,
                                         100.0f * glm::cos(glm::radians(lightAngle)));
+//        lightPos = glm::vec3(0.0, 0.0,0.0);
+//        lightPos = camera->getPos();
         heightMapShader.setVec3("lightPos", lightPos);
         CHECK_GL_ERROR();
 
