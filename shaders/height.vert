@@ -16,7 +16,7 @@ void main()
 {
     float height = texture(texture_height1, aPosition.xz).r*scale - half_scale;
 
-    fragPos = vec3(Model * vec4(aPosition,1.0f));
+    fragPos = vec3(Model * vec4(aPosition.x, height, aPosition.z,1.0f));
     mycol = vec3(height, height, height);
     texCoord = vec2(aPosition.xz);
     gl_Position = PVMmatrix * vec4(aPosition.x, height, aPosition.z, 1);
