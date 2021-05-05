@@ -53,7 +53,8 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
     glEnableVertexAttribArray(0);
 }
 
-void ImGuiDraw() {
+void ImGuiDraw()
+{
     {
         static int counter = 0;
 
