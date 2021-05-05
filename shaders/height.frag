@@ -6,8 +6,8 @@ in vec3 fragPos;
 
 out vec4 FragColor;
 
-uniform sampler2D normalMapTexture;
-uniform sampler2D colorMapTexture;
+uniform sampler2D texture_normal1;
+uniform sampler2D texture_diffuse1;
 uniform vec3 lightPos;
 
 void main()
@@ -17,19 +17,17 @@ void main()
 	// means up, but i want (0, 1, 0) to be up, because the terrain is
 	// rotated by 90 degrees along X axis, and I don't want to compute
 	// tangent space
-	vec3 normal = (texture(normalMapTexture, texCoord)).rbg;
+	vec3 normal = (texture(texture_normal1, texCoord)).rbg;
 	normal = normalize(normal * 2.0 - 1.0);
     // I also must invert the z (previously y) component, sinze openGL
 	// reads texture coordinate reversed from how textures are created
 	normal = normal * vec3(1.0, 1.0, -1.0);
 	vec3 lightDir = normalize(lightPos - fragPos);
 
-    vec4 texColor = texture(colorMapTexture, texCoord);
+    vec4 texColor = texture(texture_diffuse1, texCoord);
 	float diff = max(dot(normal, lightDir), 0.0);
 	vec4 ambient = vec4(0.1, 0.1, 0.1, 1.0) * texColor;
 	vec4 diffuse = diff * texColor;
 	vec4 result = (ambient + diffuse);
-//	result = (vec4(lightDir,1.0) + vec4(1.0, 1.0, 1.0, 1.0))*0.5;
-//    result = diff * vec4(0.5, 0.5,0.5,1.0); //* vec4(fragPos.x+0.1,fragPos.y+0.1,fragPos.z+0.1,1.0);
 	FragColor = result;
 }
