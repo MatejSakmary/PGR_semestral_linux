@@ -17,7 +17,7 @@
 
 #include "stb_image.h"
 
-static Camera* camera = NULL;
+static Camera *camera = NULL;
 static float lightAngle = 0.0f;
 
 static float lastX = 0.0f;
@@ -38,76 +38,82 @@ static float zrotation = 0;
 static int indices_offset = 0;
 
 
-void setupTriangle(unsigned int &VBO, unsigned int &VAO)
-{
+void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
     float vertices[] = {
-    -0.5f, -0.5f, 0.0f,
-     0.5f, -0.5f, 0.0f,
-     0.0f,  0.5f, 0.0f
+            -0.5f, -0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            0.0f, 0.5f, 0.0f
     };
     glGenBuffers(1, &VBO);
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     glEnableVertexAttribArray(0);
 }
 
-void ImGuiDraw()
-{
-	{
-		static int counter = 0;
+void ImGuiDraw() {
+    {
+        static int counter = 0;
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Begin(
+                "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-		ImGui::Text("use WASD to move around");
-		ImGui::Text("use SPACE to fly up CTRL to fly downwards");
-		ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Camera Parameters", &show_another_window);
+        ImGui::Text("use WASD to move around");
+        ImGui::Text("use SPACE to fly up CTRL to fly downwards");
+        ImGui::Text(
+                "press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
+        ImGui::Checkbox("Camera Parameters", &show_another_window);
 
-		ImGui::SliderFloat("light angle", &lightAngle, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+        ImGui::SliderFloat("light angle", &lightAngle, 0.0f,
+                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
-		if (ImGui::Button("Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			camera->switchToStatic(1);
-		ImGui::SameLine();
-		if (ImGui::Button("Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			camera->switchToStatic(2);
+        if (ImGui::Button(
+                "Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            camera->switchToStatic(1);
+        ImGui::SameLine();
+        if (ImGui::Button(
+                "Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            camera->switchToStatic(2);
 
-		ImGui::SliderFloat("portalx angle", &xrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::SliderFloat("portaly angle", &yrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::SliderFloat("portalz angle", &zrotation, 0.0f, 360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::SliderInt("indices offset", &indices_offset, 0, 400);            // Edit 1 float using a slider from 0.0f to 1.0f
-		
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	}
+        ImGui::SliderFloat("portalx angle", &xrotation, 0.0f,
+                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("portaly angle", &yrotation, 0.0f,
+                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderFloat("portalz angle", &zrotation, 0.0f,
+                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderInt("indices offset", &indices_offset, 0,
+                         400);            // Edit 1 float using a slider from 0.0f to 1.0f
 
-	// 3. Show another simple window.
-	if (show_another_window)
-	{
-		glm::vec3 cameraPos = camera->getPos();
-		ImGui::Begin("Camera Parameters", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		if (ImGui::Button("Close"))
-			show_another_window = false;
-		ImGui::Text("Camera position is");
-		ImGui::Text("x: %f", cameraPos.x);
-		ImGui::SameLine();
-		ImGui::Text("y: %f", cameraPos.y);
-		ImGui::SameLine();
-		ImGui::Text("z: %f", cameraPos.z);
-		ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
-		ImGui::End();
-	}
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                    ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
+
+    // 3. Show another simple window.
+    if (show_another_window) {
+        glm::vec3 cameraPos = camera->getPos();
+        ImGui::Begin("Camera Parameters",
+                     &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        if (ImGui::Button("Close"))
+            show_another_window = false;
+        ImGui::Text("Camera position is");
+        ImGui::Text("x: %f", cameraPos.x);
+        ImGui::SameLine();
+        ImGui::Text("y: %f", cameraPos.y);
+        ImGui::SameLine();
+        ImGui::Text("z: %f", cameraPos.z);
+        ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
+        ImGui::End();
+    }
 }
 
-void mouseCallback(GLFWwindow* window, double x, double y)
-{
-    if(!mouseControl) return;
+void mouseCallback(GLFWwindow *window, double x, double y) {
+    if (!mouseControl) return;
 
-    if(firstFrame)
-    {
+    if (firstFrame) {
         lastX = x;
         lastY = y;
         firstFrame = false;
@@ -117,157 +123,110 @@ void mouseCallback(GLFWwindow* window, double x, double y)
     float yoffset = lastY - y;
     lastX = x;
     lastY = y;
-    camera->updateFrontVec(xoffset,yoffset);
+    camera->updateFrontVec(xoffset, yoffset);
 }
 
-void processInput(GLFWwindow* window)
-{
+void processInput(GLFWwindow *window) {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     pressDelay -= deltaTime;
 
-    if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS && (pressDelay < 0))
-	{
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS && (pressDelay < 0)) {
         if (mouseControl)
             std::cout << "mouse control is now enabled" << std::endl;
         else
             std::cout << "mouse control is now disabled" << std::endl;
 
-		pressDelay = 0.5f;
-		mouseControl = !mouseControl;
-		if(mouseControl == true) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-		else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	}
-
-	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-		camera->switchToStatic(1);
-	}
-	if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-		camera->switchToStatic(2);
-	}
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera->forward(deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera->back(deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera->left(deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera->right(deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-		camera->up(deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		camera->down(deltaTime);
-	}
-}
-
-unsigned int prepareTexture(const char* path)
-{
-    /* prepare height map */
-    int width, height, nrComponents;
-    unsigned char *texture = stbi_load(path, &width, &height, &nrComponents, 0);
-    if(texture)
-    {
-        std::cout << "LOADED HEIGHT MAP" << std::endl;
-    } else {
-        std::cout << "FAILED TO LOAD HEIGHT MAP" << std::endl;
-        return 0;
+        pressDelay = 0.5f;
+        mouseControl = !mouseControl;
+        if (mouseControl == true) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
-    GLenum format;
-    if(nrComponents == 1)
-        format = GL_RED;
-    else if (nrComponents == 3)
-        format = GL_RGB;
-    else if (nrComponents == 4)
-        format = GL_RGBA;
 
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, texture);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    /* I want exact values of the height map */
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    stbi_image_free(texture);
-    return textureID;
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        camera->switchToStatic(1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+        camera->switchToStatic(2);
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        camera->forward(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        camera->back(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        camera->left(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        camera->right(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        camera->up(deltaTime);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        camera->down(deltaTime);
+    }
 }
 
-unsigned int prepareTerrainMesh(unsigned int TERRAIN_DEPTH, unsigned int TERRAIN_WIDTH){
-    unsigned int VAO, VBO, EBO;
-    const int TOTAL = TERRAIN_DEPTH * TERRAIN_WIDTH;
-    const int TOTAL_INDICES = TOTAL * 2 * 3; 
-    unsigned int indices[TOTAL_INDICES];
-    glm::vec3 vertices[TOTAL];
+Model prepareTerrainModel(unsigned int terrainResolution, const char* heightTexPath,
+                          const char* normalTexPath, const char* diffuseTexPath) {
+    std::vector<Vertex> vertices;
+    std::vector<Texture> textures;
+    std::vector<unsigned int> indices;
 
-    int count = 0;
-    for(unsigned int i = 0; i < TERRAIN_DEPTH; i++)
-    {
-        for(unsigned int j = 0; j < TERRAIN_WIDTH; j++)
-        {
-            vertices[count++] = glm::vec3((float(i)/(TERRAIN_WIDTH-1)),
-                                          (0),
-                                          (float(j)/(TERRAIN_DEPTH-1)));
-            // std::cout << "adding vertex : " << vertices[count-1].x << " "
-            //                                 << vertices[count-1].y << " " 
-            //                                 << vertices[count-1].z << " " << std::endl;
-
+    for (unsigned int i = 0; i < terrainResolution; i++) {
+        for (unsigned int j = 0; j < terrainResolution; j++) {
+            Vertex vertex;
+            glm::vec3 position = glm::vec3((float(i) / (terrainResolution - 1)),
+                                           (0),
+                                           (float(j) / (terrainResolution - 1)));
+            /* Height map loads normal from texture, thus there is no need to specify normal coords */
+            glm::vec3 normal = glm::vec3(0.0, 0.0, 0.0);
+            /* Texture coords are the same as position, since the generated plane is always unit len*/
+            glm::vec2 textureCoords = glm::vec2(position.x, position.z);
+            vertex.Position = position;
+            vertex.Normal = normal;
+            vertex.TexCoords = textureCoords;
+            vertices.push_back(vertex);
         }
     }
 
-    unsigned int index = 0;
-    for(unsigned int i = 0; i < TERRAIN_DEPTH-1; i++)
-    {
-        for(unsigned int j = 0; j < TERRAIN_WIDTH-1; j++)
-        {
-            int i0 = j + i*TERRAIN_WIDTH;
+    for (unsigned int i = 0; i < terrainResolution - 1; i++) {
+        for (unsigned int j = 0; j < terrainResolution - 1; j++) {
+            int i0 = j + i * terrainResolution;
             int i1 = i0 + 1;
-            int i2 = i0+TERRAIN_WIDTH;
-            int i3 = i2+1;
-            indices[index++] = i0;
-            // std::cout << "adding indices : " << i0 << " ";
-            indices[index++] = i2;
-            // std::cout << i2 << " ";
-            indices[index++] = i1;
-            // std::cout << i1 << " "<< std::endl;;
-            indices[index++] = i1;
-            // std::cout << "adding indices : " << i1 << " ";
-            indices[index++] = i2;
-            // std::cout << i2 << " ";
-            indices[index++] = i3;
-            // std::cout << i3 << " "<< std::endl;;
+            int i2 = i0 + terrainResolution;
+            int i3 = i2 + 1;
+            indices.push_back(i0);
+            indices.push_back(i2);
+            indices.push_back(i1);
+            indices.push_back(i1);
+            indices.push_back(i2);
+            indices.push_back(i3);
         }
     }
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-    
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER,VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    return VAO;
+    auto heightTexID = loadTexture(heightTexPath);
+    auto normalTexID = loadTexture(normalTexPath);
+    auto diffuseTexID = loadTexture(diffuseTexPath);
+    Texture heightTex{heightTexID, "texture_height", heightTexPath};
+    Texture normalTex{normalTexID, "texture_normal", normalTexPath};
+    Texture diffuseTex{diffuseTexID, "texture_diffuse", diffuseTexPath};
+    textures.push_back(heightTex);
+    textures.push_back(normalTex);
+    textures.push_back(diffuseTex);
+    std::vector<Mesh> meshes;
+    Mesh mesh(vertices, indices, textures);
+    meshes.push_back(mesh);
+    Model model(meshes);
+    return model;
 }
 
-int main()
-{
+int main() {
     const char *glsl_version = "#version 130";
 
     glfwInit();
@@ -276,8 +235,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow *window = glfwCreateWindow(1920, 1080, "PGR_Semestral", NULL, NULL);
-    if (window == NULL)
-    {
+    if (window == NULL) {
         std::cout << "failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -286,8 +244,7 @@ int main()
     glfwSetCursorPosCallback(window, mouseCallback);
 
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
+    if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
@@ -297,7 +254,7 @@ int main()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void)io;
+    (void) io;
 
     ImGui::StyleColorsDark();
 
@@ -307,67 +264,54 @@ int main()
 
     /* compile shader ---------------*/
     Shader dummyShader(
-        "../shaders/dummy.vert",
-        "../shaders/dummy.frag");
-    
+            "../shaders/dummy.vert",
+            "../shaders/dummy.frag");
+
     Shader fragLightShader(
-        "../shaders/fragment_light.vert",
-        "../shaders/fragment_light.frag");
-    
+            "../shaders/fragment_light.vert",
+            "../shaders/fragment_light.frag");
+
     Shader heightMapShader(
-        "../shaders/height.vert",
-        "../shaders/height.frag");
+            "../shaders/height.vert",
+            "../shaders/height.frag");
 
     /* setup camera ---------------*/
-	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
-				        glm::vec3(0.0f, 0.0f, -1.0f),
-				        glm::vec3(0.0f, 1.0f, 0.0f));
+    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
+                        glm::vec3(0.0f, 0.0f, -1.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f));
 
     // Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
     // Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
-    Model terrain("../data/terrain_floor/generated_crater.fbx");
-
-    const int TERRAIN_WIDTH = 300;
-    const int TERRAIN_DEPTH = 300;
-    const int TERRAIN_HALF_WIDTH = TERRAIN_WIDTH>>1;
-    const int TERRAIN_HALF_DEPTH = TERRAIN_DEPTH>>1;
 
     float scale = 0.2;
-    float half_scale = scale/2.0f;
+    float half_scale = scale / 2.0f;
 
-    const int TOTAL = (TERRAIN_WIDTH * TERRAIN_DEPTH);
-    const int TOTAL_INDICIES = TOTAL*2*3;
     std::string heightFileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
     std::string normalFileName = "../data/terrain_floor/displaced_floor/normalmap.PNG";
-    std::string colorFileName = "../data/terrain_floor/displaced_floor/colormap.png";
+    std::string diffuseFileName = "../data/terrain_floor/displaced_floor/colormap.png";
 
-    unsigned int heightTexID = prepareTexture(heightFileName.c_str());
-    unsigned int normalTexID = prepareTexture(normalFileName.c_str());
-    unsigned int colorTexID = prepareTexture(colorFileName.c_str());
-    CHECK_GL_ERROR();
-    unsigned int VAO = prepareTerrainMesh(TERRAIN_DEPTH, TERRAIN_WIDTH);
-    CHECK_GL_ERROR();
+    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
+                                        diffuseFileName.c_str());
     heightMapShader.use();
-    glUniform2i(glGetUniformLocation(heightMapShader.ID,"HALF_TERRAIN_SIZE"), TERRAIN_HALF_WIDTH, TERRAIN_HALF_DEPTH);
-    glUniform1f(glGetUniformLocation(heightMapShader.ID,"scale"), scale );
-    glUniform1f(glGetUniformLocation(heightMapShader.ID,"half_scale"), half_scale );
+    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
+    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
-    while (!glfwWindowShouldClose(window))
-    {
+    while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
 
         ImGuiDraw();
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
+                     clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* objects rendering */
@@ -379,8 +323,8 @@ int main()
         // glm::mat4 cameraMatrix     = camera->getViewMatrix();
         // // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
         // modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
-	    // modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
-	    // modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
+        // modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
+        // modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
         // modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
         // fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         // fragLightShader.setMat4fv("Model", modelMatrix);
@@ -391,32 +335,17 @@ int main()
         /* load height map */
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         heightMapShader.use();
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
-        glm::mat4 modelMatrix      = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
-        modelMatrix                = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
-        glm::mat4 cameraMatrix     = camera->getViewMatrix();
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y, 0.1f,
+                                                      100.0f);
+        glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 50.0f));
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
+        glm::mat4 cameraMatrix = camera->getViewMatrix();
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
-        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)),100.0f,
-                                        100.0f * glm::cos(glm::radians(lightAngle)));
+        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)), 100.0f,
+                                       100.0f * glm::cos(glm::radians(lightAngle)));
         heightMapShader.setVec3("lightPos", lightPos);
-        CHECK_GL_ERROR();
-
-        glBindVertexArray(VAO);
-
-        glActiveTexture(GL_TEXTURE0);
-        glUniform1i(glGetUniformLocation(heightMapShader.ID,"heightMapTexture"), 0 );
-        glBindTexture(GL_TEXTURE_2D, heightTexID);
-
-        glActiveTexture(GL_TEXTURE1);
-        glUniform1i(glGetUniformLocation(heightMapShader.ID,"normalMapTexture"), 1 );
-        glBindTexture(GL_TEXTURE_2D, normalTexID);
-
-        glActiveTexture(GL_TEXTURE2);
-        glUniform1i(glGetUniformLocation(heightMapShader.ID,"colorMapTexture"), 2 );
-        glBindTexture(GL_TEXTURE_2D, colorTexID);
-
-        glDrawElements(GL_TRIANGLES, (TERRAIN_WIDTH-1)*(TERRAIN_DEPTH-1)*2*3, GL_UNSIGNED_INT,(void*)(sizeof(unsigned int)*0));
+        terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
 
 

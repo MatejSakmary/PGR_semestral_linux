@@ -1,7 +1,7 @@
 #include "mesh.h"
 
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices,
-           std::vector<Texture> textures)
+Mesh::Mesh(std::vector<Vertex>& vertices, std::vector<unsigned int>& indices,
+           std::vector<Texture>& textures)
 {
     this->vertices = vertices;
     this->indices = indices;
@@ -41,6 +41,8 @@ void Mesh::Draw(Shader &shader)
 {
     unsigned int diffuseNum = 1;
     unsigned int specularNum = 1;
+    unsigned int heightNum = 1;
+    unsigned int normalNum = 1;
 
     shader.use();
     /* go through all the loaded textures*/
@@ -51,16 +53,22 @@ void Mesh::Draw(Shader &shader)
 
         std::string number;
         std::string name = textures[i].type;
-        if (name == "texture_diffuse")
-        {
+        if (name == "texture_diffuse"){
             number = std::to_string(diffuseNum++);
-        }else if (name == "texture_specular")
-        {
+        }else if (name == "texture_specular"){
             number = std::to_string(specularNum++);
+        }else if (name == "texture_height") {
+            number = std::to_string(heightNum++);
+        }else if (name == "texture_normal"){
+            number = std::to_string(normalNum++);
+        }else{
+            std::cout << "MESH::DRAW::Error binding texture unknown texture type " << name << std::endl;
         }
+
         // this sets texture sampler with name and corresponding number in the shader
-        shader.setFloat((name + number).c_str(), i);
+        shader.setInt((name + number).c_str(), i);
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        CHECK_GL_ERROR();
     }
     glActiveTexture(GL_TEXTURE0);
     CHECK_GL_ERROR();
