@@ -169,12 +169,12 @@ void processInput(GLFWwindow* window)
 	}
 }
 
-unsigned int prepareHeightTexture(const char* path)
+unsigned int prepareTexture(const char* path)
 {
     /* prepare height map */
     int width, height, nrComponents;
-    unsigned char *heightMap = stbi_load(path,&width,&height,&nrComponents, 0);
-    if(heightMap)
+    unsigned char *texture = stbi_load(path, &width, &height, &nrComponents, 0);
+    if(texture)
     {
         std::cout << "LOADED HEIGHT MAP" << std::endl;
     } else {
@@ -192,7 +192,7 @@ unsigned int prepareHeightTexture(const char* path)
     unsigned int textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
-    glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, heightMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, texture);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     /* I want exact values of the height map */
@@ -201,7 +201,7 @@ unsigned int prepareHeightTexture(const char* path)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    stbi_image_free(heightMap);
+    stbi_image_free(texture);
     return textureID;
 }
 
@@ -316,7 +316,7 @@ int main()
     
     Shader heightMapShader(
         "../shaders/height.vert",
-        "../shaders/dummy.frag");
+        "../shaders/height.frag");
 
     /* setup camera ---------------*/
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
@@ -337,9 +337,13 @@ int main()
 
     const int TOTAL = (TERRAIN_WIDTH * TERRAIN_DEPTH);
     const int TOTAL_INDICIES = TOTAL*2*3;
-    std::string fileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
+    std::string heightFileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
+    std::string normalFileName = "../data/terrain_floor/displaced_floor/normalmap.PNG";
+    std::string colorFileName = "../data/terrain_floor/displaced_floor/colormap.png";
 
-    unsigned int texID = prepareHeightTexture(fileName.c_str());
+    unsigned int heightTexID = prepareTexture(heightFileName.c_str());
+    unsigned int normalTexID = prepareTexture(normalFileName.c_str());
+    unsigned int colorTexID = prepareTexture(colorFileName.c_str());
     CHECK_GL_ERROR();
     unsigned int VAO = prepareTerrainMesh(TERRAIN_DEPTH, TERRAIN_WIDTH);
     CHECK_GL_ERROR();
@@ -385,19 +389,32 @@ int main()
         // terrain.Draw(fragLightShader);
         /* ---------------------------------------------------*/
         /* load height map */
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         heightMapShader.use();
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y,0.1f, 100.0f);
         glm::mat4 modelMatrix      = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
         modelMatrix                = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         glm::mat4 cameraMatrix     = camera->getViewMatrix();
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+        heightMapShader.setMat4fv("Model", modelMatrix);
+        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)),100.0f,
+                                        100.0f * glm::cos(glm::radians(lightAngle)));
+        heightMapShader.setVec3("lightPos", lightPos);
+        CHECK_GL_ERROR();
 
         glBindVertexArray(VAO);
 
         glActiveTexture(GL_TEXTURE0);
         glUniform1i(glGetUniformLocation(heightMapShader.ID,"heightMapTexture"), 0 );
-        glBindTexture(GL_TEXTURE_2D, texID);
+        glBindTexture(GL_TEXTURE_2D, heightTexID);
+
+        glActiveTexture(GL_TEXTURE1);
+        glUniform1i(glGetUniformLocation(heightMapShader.ID,"normalMapTexture"), 1 );
+        glBindTexture(GL_TEXTURE_2D, normalTexID);
+
+        glActiveTexture(GL_TEXTURE2);
+        glUniform1i(glGetUniformLocation(heightMapShader.ID,"colorMapTexture"), 2 );
+        glBindTexture(GL_TEXTURE_2D, colorTexID);
 
         glDrawElements(GL_TRIANGLES, (TERRAIN_WIDTH-1)*(TERRAIN_DEPTH-1)*2*3, GL_UNSIGNED_INT,(void*)(sizeof(unsigned int)*0));
         CHECK_GL_ERROR();
