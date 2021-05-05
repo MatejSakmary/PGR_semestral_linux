@@ -307,16 +307,16 @@ int main()
 
     /* compile shader ---------------*/
     Shader dummyShader(
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.vert",
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.frag");
+        "../shaders/dummy.vert",
+        "../shaders/dummy.frag");
     
     Shader fragLightShader(
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.vert",
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/fragment_light.frag");
+        "../shaders/fragment_light.vert",
+        "../shaders/fragment_light.frag");
     
     Shader heightMapShader(
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/height.vert",
-        "/home/matejs/Projects/School/PGR/PGR_semestral_linux/shaders/dummy.frag");
+        "../shaders/height.vert",
+        "../shaders/dummy.frag");
 
     /* setup camera ---------------*/
 	camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
@@ -325,7 +325,7 @@ int main()
 
     // Model rock("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
     // Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
-    Model terrain("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/terrain_floor/generated_crater.fbx");
+    Model terrain("../data/terrain_floor/generated_crater.fbx");
 
     const int TERRAIN_WIDTH = 300;
     const int TERRAIN_DEPTH = 300;
@@ -337,7 +337,7 @@ int main()
 
     const int TOTAL = (TERRAIN_WIDTH * TERRAIN_DEPTH);
     const int TOTAL_INDICIES = TOTAL*2*3;
-    std::string fileName = "/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/terrain_floor/displaced_floor/heightmap.tga";
+    std::string fileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
 
     unsigned int texID = prepareHeightTexture(fileName.c_str());
     CHECK_GL_ERROR();
