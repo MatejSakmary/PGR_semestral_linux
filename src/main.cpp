@@ -234,7 +234,6 @@ Model prepareTerrainModel(unsigned int terrainResolution, const char *heightTexP
 }
 
 int main() {
-    GameState gamestate = GameState();
     const char *glsl_version = "#version 130";
 
     glfwInit();
@@ -270,22 +269,15 @@ int main() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
 
+    GameState gamestate = GameState("../data/GameScene.xml");
     /* compile shader ---------------*/
     Shader dummyShader(
             "../shaders/dummy.vert",
             "../shaders/dummy.frag");
 
-    Shader fragLightShader(
-            "../shaders/fragment_light.vert",
-            "../shaders/fragment_light.frag");
-
-    Shader heightMapShader(
-            "../shaders/height.vert",
-            "../shaders/height.frag");
-
-    Shader cubeMapShader(
-            "../shaders/cubemap.vert",
-            "../shaders/cubemap.frag");
+    Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
+    Shader heightMapShader = *gamestate.shaders.find("height")->second;
+    Shader fragLightShader = *gamestate.shaders.find("frag_light")->second;
 
     /* setup camera ---------------*/
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
@@ -396,7 +388,7 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     #pragma endregion
 
-    Light* directionalLight = new DirectionalLight(glm::vec3(0.05, 0.05,0.05),
+    Light* directionalLight = new DirectionalLight(glm::vec3(0.7, 0.7,0.7),
                                       glm::vec3(0.7,0.7,0.7),
                                       glm::vec3(0.3,0.3,0.3),
                                       glm::vec3(1,0.5,1));

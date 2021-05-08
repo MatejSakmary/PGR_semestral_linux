@@ -33,7 +33,10 @@ public:
     RenderParameters renderParameters;
     std::vector<Model> models;
     std::vector<Light> lights;
-    std::unordered_map<std::string,Shader> shaders;
-    GameState();
+    std::unordered_map<std::string,Shader*> shaders;
+    GameState(std::string xmlPath);
+
+private:
+    unsigned int loadShaders(rapidxml::xml_document<>* gameScene);
 
 };
