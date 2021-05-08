@@ -30,8 +30,8 @@ void main()
 
     vec4 texColor = texture(material.texture_diffuse1, texCoord);
 	float diff = max(dot(normal, lightDir), 0.0);
-	vec4 ambient = vec4(0.1, 0.1, 0.1, 1.0) * texColor;
-	vec4 diffuse = diff * texColor;
+	vec4 ambient = vec4(0.05, 0.05, 0.05, 1.0) * texColor;
+	vec4 diffuse = diff * texColor * vec4(0.08, 0.08, 0.15 ,1);
 	vec4 result = (ambient + diffuse);
 	FragColor = result;
 }

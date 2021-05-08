@@ -279,6 +279,10 @@ int main() {
             "../shaders/height.vert",
             "../shaders/height.frag");
 
+    Shader cubeMapShader(
+            "../shaders/cubemap.vert",
+            "../shaders/cubemap.frag");
+
     /* setup camera ---------------*/
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
                         glm::vec3(0.0f, 0.0f, -1.0f),
@@ -295,13 +299,99 @@ int main() {
     std::string normalFileName = "../data/terrain_floor/displaced_floor/normalmap.PNG";
     std::string diffuseFileName = "../data/terrain_floor/displaced_floor/colormap.png";
 
-//    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
-//                                        diffuseFileName.c_str());
-//    heightMapShader.use();
-//    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
-//    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
+    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
+                                        diffuseFileName.c_str());
+    heightMapShader.use();
+    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
+    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
-    /* Cubemap texture */
+    /* Skybox texture ------------------------------------- */
+    float skyboxVertices[] = {
+            // positions
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, -1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f,
+            -1.0f, -1.0f, 1.0f,
+
+            -1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, -1.0f,
+            1.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, 1.0f,
+            -1.0f, 1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, -1.0f,
+            1.0f, -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,
+            1.0f, -1.0f, 1.0f
+    };
+    unsigned int skyboxID;
+    glGenTextures(1, &skyboxID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+
+    std::vector<std::string> cubemapPaths;
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_rt.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_lf.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_up.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_dn.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_bk.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_ft.tga");
+
+    int width, height, nrChannels;
+    unsigned char *data;
+    for (unsigned int i = 0; i < cubemapPaths.size(); i++)
+    {
+        data = stbi_load(cubemapPaths[i].c_str(), &width, &height, &nrChannels, 0);
+        if (!data)
+        {
+            std::cout << "MAIN::CUBEMAP::Failed to load texture at path " << cubemapPaths[i] << std::endl;
+            stbi_image_free(data);
+            continue;
+        }
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height,
+                     0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
+    unsigned int VAO, VBO;
+    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+
     while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
@@ -319,6 +409,20 @@ int main() {
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
                      clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        /* skybox rendering ---------------------------------*/
+        glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
+                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
+        glDepthMask(GL_FALSE);
+        cubeMapShader.use();
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
+        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(camera->getViewMatrix())));
+        cubeMapShader.setMat4fv("projection", projectionMatrix1);
+        cubeMapShader.setInt("cubemap", 0);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthMask(GL_TRUE);
+
 
         /* objects rendering */
         fragLightShader.use();
@@ -373,19 +477,15 @@ int main() {
         /* ---------------------------------------------------*/
         /* load height map */
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//        heightMapShader.use();
-//        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f), io.DisplaySize.x / io.DisplaySize.y, 0.1f,
-//                                                      100.0f);
-//        glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(50.0f, 50.0f, 50.0f));
-//        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
-//        glm::mat4 cameraMatrix = camera->getViewMatrix();
-//        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-//        heightMapShader.setMat4fv("Model", modelMatrix);
-//        glm::vec3 lightPos = glm::vec3(100.0f * glm::sin(glm::radians(lightAngle)), 100.0f,
-//                                       100.0f * glm::cos(glm::radians(lightAngle)));
-//        heightMapShader.setVec3("lightPos", lightPos);
-//        terrain.Draw(heightMapShader);
-//        CHECK_GL_ERROR();
+        heightMapShader.use();
+        modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
+        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
+        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+        heightMapShader.setMat4fv("Model", modelMatrix);
+        heightMapShader.setVec3("lightPos", lightPos);
+        terrain.Draw(heightMapShader);
+        CHECK_GL_ERROR();
+
 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
