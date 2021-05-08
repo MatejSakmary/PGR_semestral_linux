@@ -388,15 +388,15 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
     #pragma endregion
 
-    Light* directionalLight = new DirectionalLight(glm::vec3(0.7, 0.7,0.7),
-                                      glm::vec3(0.7,0.7,0.7),
-                                      glm::vec3(0.3,0.3,0.3),
-                                      glm::vec3(1,0.5,1));
+    Light* directionalLight = new DirectionalLight(glm::vec3(0.05, 0.05,0.05),
+                                      glm::vec3(0.4,0.4,0.4),
+                                      glm::vec3(0.05,0.05,0.05),
+                                      glm::vec3(-1,2,0));
     Light* pointLight = new PointLight(glm::vec3(0, 0,0),
-                          glm::vec3(0.7,0.2,0.2),
-                          glm::vec3(0.3,0.1,0.1),
+                          glm::vec3(0.4,0.3,0.0),
+                          glm::vec3(0.4,0.3,0.0),
                           glm::vec3(2,2,2),
-                          0.5, 0.03, 0.032);
+                          1.0f, 0.09f, 0.032f);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -449,6 +449,7 @@ int main() {
         fragLightShader.setMat4fv("Model", modelMatrix);
         fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
 
+        fragLightShader.setBool("normalTexUsed", false);
         fragLightShader.setVec3("cameraPosition", camera->getPos());
         fragLightShader.setFloat("material.shininess", 30.0f);
         fragLightShader.setInt("usedLights", 2);
@@ -486,11 +487,18 @@ int main() {
         /* load height map */
 //        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         heightMapShader.use();
+        heightMapShader.setVec3("cameraPosition", camera->getPos());
+        heightMapShader.setFloat("material.shininess", 0.5f);
+        heightMapShader.setInt("usedLights", 2);
+        directionalLight->setLightParam(0, heightMapShader);
+        pointLight->setLightParam(1, heightMapShader);
+
         modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
         heightMapShader.setVec3("lightPos", lightPos);
+        heightMapShader.setBool("normalTexUsed", true);
         terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
 

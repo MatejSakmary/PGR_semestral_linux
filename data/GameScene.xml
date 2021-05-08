@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <Models>
-        <Model name="portal"/>
+        <Model name="palm"  path=""/>
     </Models>
     <Shaders>
         <Shader name="frag_light"
@@ -9,9 +9,19 @@
                 frag_path ="../shaders/fragment_light.frag"/>
         <Shader name="height"
                 vert_path="../shaders/height.vert"
-                frag_path ="../shaders/height.frag"/>
+                frag_path ="../shaders/fragment_light.frag"/>
         <Shader name="cubemap"
                 vert_path="../shaders/cubemap.vert"
                 frag_path ="../shaders/cubemap.frag"/>
     </Shaders>
+    <SceneObjects>
+        <SceneObject modelName="palm">
+            <Rotation xRotation="270" yRotation="0" zRotation="0"/>
+            <Position x="0" y="0" z="0"/>
+        </SceneObject>
+        <SceneObject modelName="palm">
+            <Rotation xRotation="260" yRotation="0" zRotation="30"/>
+            <Position x="5" y="0" z="5"/>
+        </SceneObject>
+    </SceneObjects>
 </Root>

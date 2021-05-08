@@ -1,10 +1,11 @@
 #version 330 core
 
-struct Material {
+struct Material{
 	sampler2D texture_diffuse1;
 	sampler2D texture_specular1;
 	sampler2D texture_normal1;
-	float shininess;
+	sampler2D texture_height1;
+    float shininess;
 };
 
 /* this is a general structure for defining light, some not all attributes are always used
@@ -42,6 +43,7 @@ uniform vec3 cameraPosition;
 uniform Material material;
 uniform Light lights[MAX_NUM_LIGHTS];
 uniform int usedLights;
+uniform bool normalTexUsed;
 
 out vec4 color;
 
@@ -51,10 +53,27 @@ vec3 getSpotLight(Light light, vec3 normal, vec3 fragPosition,  vec3 cameraDirec
 
 void main()
 {
-	vec3 normal = normalize(fragNormal);
+	vec3 normal;
+	if( normalTexUsed == true){
+		// swap z with y because texture is in tangent space thus (0,0,1)
+		// means up, but i want (0, 1, 0) to be up, because the terrain is
+		// rotated by 90 degrees along X axis, and I don't want to compute
+		// tangent space
+		normal = (texture(material.texture_normal1, texCoords)).rbg;
+		normal = normalize(normal * 2.0 - 1.0);
+		// I also must invert the z (previously y) component, sinze openGL
+		// reads texture coordinate reversed from how textures are created
+		normal = normal * vec3(1.0, 1.0, -1.0);
+	} else {
+		normal = normalize(fragNormal);
+	}
     vec3 cameraDirection = normalize(cameraPosition - fragPosition);
 
 	vec3 result;
+	if(usedLights <= 0){
+		result = vec3(1.0, 1.0, 1.0);
+	}
+
 	for(int i = 0; i < usedLights; i++)
 	{
 		if(lights[i].type == 0){
