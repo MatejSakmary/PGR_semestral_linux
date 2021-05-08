@@ -17,6 +17,7 @@ GameState::GameState(std::string xmlPath)
     doc.parse<0>(&content[0]);
 
     unsigned int shaderCnt = loadShaders(&doc);
+    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
 }
 
 unsigned int GameState::loadShaders(rapidxml::xml_document<> *gameScene)
