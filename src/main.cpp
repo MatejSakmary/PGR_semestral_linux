@@ -10,6 +10,8 @@
 #include "camera.h"
 #include "model.h"
 #include "utils.h"
+#include "game_state.h"
+#include "light.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -56,45 +58,46 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
 }
 
 void ImGuiDraw() {
-    {
-        static int counter = 0;
+    ImGui::Begin(
+            "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Begin(
-                "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Text("use WASD to move around");
+    ImGui::Text("use SPACE to fly up CTRL to fly downwards");
+    ImGui::Text(
+            "press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
+    ImGui::Checkbox("Camera Parameters", &show_another_window);
 
-        ImGui::Text("use WASD to move around");
-        ImGui::Text("use SPACE to fly up CTRL to fly downwards");
-        ImGui::Text(
-                "press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
-        ImGui::Checkbox("Camera Parameters", &show_another_window);
+    ImGui::SliderFloat("light angle", &lightAngle, 0.0f,
+                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
-        ImGui::SliderFloat("light angle", &lightAngle, 0.0f,
-                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
-
-        if (ImGui::Button(
-                "Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            camera->switchToStatic(1);
-        ImGui::SameLine();
-        if (ImGui::Button(
-                "Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            camera->switchToStatic(2);
-
-        ImGui::SliderFloat("portalx angle", &xrotation, 0.0f,
-                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("portaly angle", &yrotation, 0.0f,
-                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("portalz angle", &zrotation, 0.0f,
-                           360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("light height", &lightHeight, 0,
-                           20);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderFloat("light radius", &lightRadius, 0,
-                           20);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                    ImGui::GetIO().Framerate);
-        ImGui::End();
+//        if (ImGui::Button(
+//                "Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+//            camera->switchToStatic(1);
+//        ImGui::SameLine();
+//        if (ImGui::Button(
+//                "Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+//            camera->switchToStatic(2);
+    for (unsigned int i = 0; i < 2; i++) {
+        if (ImGui::Button(("Switch to camera " + std::to_string(i +
+                                                                1)).c_str()))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            camera->switchToStatic(i + 1);
     }
+
+    ImGui::SliderFloat("portalx angle", &xrotation, 0.0f,
+                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("portaly angle", &yrotation, 0.0f,
+                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("portalz angle", &zrotation, 0.0f,
+                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("light height", &lightHeight, 0,
+                       20);            // Edit 1 float using a slider from 0.0f to 1.0f
+    ImGui::SliderFloat("light radius", &lightRadius, 0,
+                       20);            // Edit 1 float using a slider from 0.0f to 1.0f
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+    ImGui::End();
 
     // 3. Show another simple window.
     if (show_another_window) {
@@ -306,6 +309,7 @@ int main() {
     glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
     /* Skybox texture ------------------------------------- */
+    #pragma region Skybox
     float skyboxVertices[] = {
             // positions
             -1.0f, 1.0f, -1.0f,
@@ -364,11 +368,9 @@ int main() {
 
     int width, height, nrChannels;
     unsigned char *data;
-    for (unsigned int i = 0; i < cubemapPaths.size(); i++)
-    {
+    for (unsigned int i = 0; i < cubemapPaths.size(); i++) {
         data = stbi_load(cubemapPaths[i].c_str(), &width, &height, &nrChannels, 0);
-        if (!data)
-        {
+        if (!data) {
             std::cout << "MAIN::CUBEMAP::Failed to load texture at path " << cubemapPaths[i] << std::endl;
             stbi_image_free(data);
             continue;
@@ -390,7 +392,18 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    #pragma endregion
+
+    Light* directionalLight = new DirectionalLight(glm::vec3(0.05, 0.05,0.05),
+                                      glm::vec3(0.7,0.7,0.7),
+                                      glm::vec3(0.3,0.3,0.3),
+                                      glm::vec3(1,0.5,1));
+    Light* pointLight = new PointLight(glm::vec3(0, 0,0),
+                          glm::vec3(0.7,0.2,0.2),
+                          glm::vec3(0.3,0.1,0.1),
+                          glm::vec3(2,2,2),
+                          0.5, 0.03, 0.032);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -412,7 +425,7 @@ int main() {
 
         /* skybox rendering ---------------------------------*/
         glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
-                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
+                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
         glDepthMask(GL_FALSE);
         cubeMapShader.use();
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
@@ -445,34 +458,36 @@ int main() {
 
         fragLightShader.setVec3("cameraPosition", camera->getPos());
         fragLightShader.setFloat("material.shininess", 30.0f);
-        fragLightShader.setInt("usedLights", 3);
-        fragLightShader.setInt("lights[0].type", 2);
-        fragLightShader.setInt("lights[1].type", 1);
-        fragLightShader.setInt("lights[2].type", 0);
-
-        fragLightShader.setVec3("lights[2].direction", lightPos);
-        fragLightShader.setVec3("lights[2].ambient", 0.05f, 0.05f, 0.05f);
-        fragLightShader.setVec3("lights[2].diffuse", 0.7f, 0.7f, 0.7f);
-        fragLightShader.setVec3("lights[2].specular", 0.3f, 0.3f, 0.3f);
-
-        fragLightShader.setVec3("lights[1].position", lightPos);
-        fragLightShader.setVec3("lights[1].ambient", 0.05f, 0.05f, 0.05f);
-        fragLightShader.setVec3("lights[1].diffuse", 0.4f, 0.1f, 0.1f);
-        fragLightShader.setVec3("lights[1].specular", 0.3f, 0.1f, 0.1f);
-        fragLightShader.setFloat("lights[1].constant", 1.0f);
-        fragLightShader.setFloat("lights[1].linear", 0.09f);
-        fragLightShader.setFloat("lights[1].quadratic", 0.032f);
-
-        fragLightShader.setVec3("lights[0].position", camera->getPos());
-        fragLightShader.setVec3("lights[0].direction", camera->getFront());
-        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
-        fragLightShader.setVec3("lights[0].diffuse", 0.1f, 0.4f, 0.1f);
-        fragLightShader.setVec3("lights[0].specular", 0.1f, 0.3f, 0.1f);
-        fragLightShader.setFloat("lights[0].constant", 1.0f);
-        fragLightShader.setFloat("lights[0].linear", 0.09f);
-        fragLightShader.setFloat("lights[0].quadratic", 0.032f);
-        fragLightShader.setFloat("lights[0].cutOff", glm::cos(glm::radians(12.5f)));
-        fragLightShader.setFloat("lights[0].outerCutOff", glm::cos(glm::radians(20.0f)));
+        fragLightShader.setInt("usedLights", 2);
+        directionalLight->setLightParam(0, fragLightShader);
+        pointLight->setLightParam(1, fragLightShader);
+//        fragLightShader.setInt("lights[0].type", 2);
+//        fragLightShader.setInt("lights[1].type", 1);
+//        fragLightShader.setInt("lights[2].type", 0);
+//
+//        fragLightShader.setVec3("lights[2].direction", lightPos);
+//        fragLightShader.setVec3("lights[2].ambient", 0.05f, 0.05f, 0.05f);
+//        fragLightShader.setVec3("lights[2].diffuse", 0.7f, 0.7f, 0.7f);
+//        fragLightShader.setVec3("lights[2].specular", 0.3f, 0.3f, 0.3f);
+//
+//        fragLightShader.setVec3("lights[1].position", lightPos);
+//        fragLightShader.setVec3("lights[1].ambient", 0.05f, 0.05f, 0.05f);
+//        fragLightShader.setVec3("lights[1].diffuse", 0.4f, 0.1f, 0.1f);
+//        fragLightShader.setVec3("lights[1].specular", 0.3f, 0.1f, 0.1f);
+//        fragLightShader.setFloat("lights[1].constant", 1.0f);
+//        fragLightShader.setFloat("lights[1].linear", 0.09f);
+//        fragLightShader.setFloat("lights[1].quadratic", 0.032f);
+//
+//        fragLightShader.setVec3("lights[0].position", camera->getPos());
+//        fragLightShader.setVec3("lights[0].direction", camera->getFront());
+//        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
+//        fragLightShader.setVec3("lights[0].diffuse", 0.1f, 0.4f, 0.1f);
+//        fragLightShader.setVec3("lights[0].specular", 0.1f, 0.3f, 0.1f);
+//        fragLightShader.setFloat("lights[0].constant", 1.0f);
+//        fragLightShader.setFloat("lights[0].linear", 0.09f);
+//        fragLightShader.setFloat("lights[0].quadratic", 0.032f);
+//        fragLightShader.setFloat("lights[0].cutOff", glm::cos(glm::radians(12.5f)));
+//        fragLightShader.setFloat("lights[0].outerCutOff", glm::cos(glm::radians(20.0f)));
         palm.Draw(fragLightShader);
         /* ---------------------------------------------------*/
         /* load height map */
@@ -485,7 +500,6 @@ int main() {
         heightMapShader.setVec3("lightPos", lightPos);
         terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
-
 
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
