@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Root>
     <Models>
-        <Model name="palm"  path=""/>
+        <Model name="palm"  path="../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx"/>
+        <Model name="portal"  path="../data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx"/>
     </Models>
     <Shaders>
         <Shader name="frag_light"
@@ -15,13 +16,15 @@
                 frag_path ="../shaders/cubemap.frag"/>
     </Shaders>
     <SceneObjects>
-        <SceneObject modelName="palm">
-            <Rotation xRotation="270" yRotation="0" zRotation="0"/>
-            <Position x="0" y="0" z="0"/>
+        <SceneObject modelName="palm" shaderName="frag_light">
+            <Rotation x="270" y="0" z="0"/>
+            <Position x="0" y="-6" z="0"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
         </SceneObject>
-        <SceneObject modelName="palm">
-            <Rotation xRotation="260" yRotation="0" zRotation="30"/>
-            <Position x="5" y="0" z="5"/>
+        <SceneObject modelName="palm" shaderName="frag_light">
+            <Rotation x="247" y="0" z="35"/>
+            <Position x="3" y="-6" z="5"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
         </SceneObject>
     </SceneObjects>
 </Root>

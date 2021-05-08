@@ -7,11 +7,18 @@
 #include "camera.h"
 #include "model.h"
 #include "light.h"
-#include "glm/glm.hpp"
+#include "transform.h"
+
 #include "rapidxml/rapidxml.hpp"
-//#include "rapidxml/rapidxml_print.hpp"
-//#include "rapidxml/rapidxml_utils.hpp"
-//#include "rapidxml/rapidxml_iterators.hpp"
+
+#include "glm/glm.hpp"
+#include "glm/ext.hpp"
+
+typedef struct {
+    Model* model;
+    Shader* shader;
+    Transform transform;
+}Object;
 
 typedef struct{
     float lastX;
@@ -31,12 +38,15 @@ public:
     Camera *camera;
     MouseParameters mouseParameters;
     RenderParameters renderParameters;
-    std::vector<Model> models;
     std::vector<Light> lights;
+    std::vector<Object> objects;
     std::unordered_map<std::string,Shader*> shaders;
+    std::unordered_map<std::string,Model*> models;
     GameState(std::string xmlPath);
 
 private:
     unsigned int loadShaders(rapidxml::xml_document<>* gameScene);
+    unsigned int loadModels(rapidxml::xml_document<>* gameScene);
+    unsigned int loadObjectInstances(rapidxml::xml_document<>* gameScene);
 
 };

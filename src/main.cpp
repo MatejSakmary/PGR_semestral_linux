@@ -19,6 +19,7 @@
 
 #include "stb_image.h"
 
+static std::vector<Light *> lights;
 static Camera *camera = NULL;
 static float lightAngle = 0.0f;
 static float lightHeight = 1.0f;
@@ -34,12 +35,10 @@ static bool firstFrame = true;
 static bool mouseControl = false;
 
 bool show_another_window = false;
+bool show_Lights_window = false;
 ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 
-static float xrotation = 270;
-static float yrotation = 0;
-static float zrotation = 0;
-static int indices_offset = 0;
+static int lights_used = 1;
 
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
@@ -66,35 +65,16 @@ void ImGuiDraw() {
     ImGui::Text(
             "press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
     ImGui::Checkbox("Camera Parameters", &show_another_window);
+    ImGui::Checkbox("Light Parameters", &show_Lights_window);
 
-    ImGui::SliderFloat("light angle", &lightAngle, 0.0f,
-                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
     ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
-//        if (ImGui::Button(
-//                "Switch to camera 1"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-//            camera->switchToStatic(1);
-//        ImGui::SameLine();
-//        if (ImGui::Button(
-//                "Switch to camera 2"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-//            camera->switchToStatic(2);
     for (unsigned int i = 0; i < 2; i++) {
-        if (ImGui::Button(("Switch to camera " + std::to_string(i +
-                                                                1)).c_str()))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+        if (ImGui::Button(("Switch to camera " + std::to_string(i + 1)).c_str())) {
             camera->switchToStatic(i + 1);
+            ImGui::SameLine();
+        }
     }
-
-    ImGui::SliderFloat("portalx angle", &xrotation, 0.0f,
-                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("portaly angle", &yrotation, 0.0f,
-                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("portalz angle", &zrotation, 0.0f,
-                       360.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("light height", &lightHeight, 0,
-                       20);            // Edit 1 float using a slider from 0.0f to 1.0f
-    ImGui::SliderFloat("light radius", &lightRadius, 0,
-                       20);            // Edit 1 float using a slider from 0.0f to 1.0f
-
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
                 ImGui::GetIO().Framerate);
     ImGui::End();
@@ -102,10 +82,8 @@ void ImGuiDraw() {
     // 3. Show another simple window.
     if (show_another_window) {
         glm::vec3 cameraPos = camera->getPos();
-        ImGui::Begin("Camera Parameters",
-                     &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        if (ImGui::Button("Close"))
-            show_another_window = false;
+        ImGui::Begin("Camera Parameters",&show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        if (ImGui::Button("Close")) { show_another_window = false; }
         ImGui::Text("Camera position is");
         ImGui::Text("x: %f", cameraPos.x);
         ImGui::SameLine();
@@ -113,6 +91,47 @@ void ImGuiDraw() {
         ImGui::SameLine();
         ImGui::Text("z: %f", cameraPos.z);
         ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
+        ImGui::End();
+    }
+
+    if (show_Lights_window) {
+        ImGui::Begin("Lights Properties", &show_Lights_window);
+        ImGui::SliderInt("Used Ligts", &lights_used, 1, 7);
+
+        for(unsigned int i = 0; i <= 7; i++){
+            if(ImGui::CollapsingHeader(("Light " + std::to_string(i)).c_str())){
+                ImVec4 Ambient = ImVec4(lights[i]->ambient.x,lights[i]->ambient.y,lights[i]->ambient.z,1.0);
+                ImVec4 Diffuse = ImVec4(lights[i]->diffuse.x,lights[i]->diffuse.y,lights[i]->diffuse.z,1.0);
+                ImVec4 Specular = ImVec4(lights[i]->specular.x,lights[i]->specular.y,lights[i]->specular.z,1.0);
+                ImGui::ColorEdit3("Ambient",(float*)&Ambient);
+                ImGui::ColorEdit3("Diffuse",(float*)&Diffuse);
+                ImGui::ColorEdit3("Specular",(float*)&Specular);
+                lights[i]->ambient = glm::vec3(Ambient.x, Ambient.y, Ambient.z);
+                lights[i]->diffuse = glm::vec3(Diffuse.x, Diffuse.y, Diffuse.z);
+                lights[i]->specular = glm::vec3(Specular.x, Specular.y, Specular.z);
+
+                if( lights[i]->type == DIRECTIONAL_LIGHT){
+                    ImGui::Text("Direction");
+                    auto* light = (DirectionalLight*)lights[i];
+                    ImVec4 Direction = ImVec4(light->direction.x, light->direction.y, light->direction.z, 1.0);
+                    ImGui::InputFloat("x",&Direction.x , 0.1, 1.0);
+                    ImGui::InputFloat("y",&Direction.y , 0.1, 1.0);
+                    ImGui::InputFloat("z",&Direction.z , 0.1, 1.0);
+                    light->direction = glm::vec3(Direction.x, Direction.y, Direction.z);
+                } else {
+                    ImGui::Text("Position");
+                    auto* light = (PointLight*)lights[i];
+                    ImVec4 Position = ImVec4(light->position.x, light->position.y, light->position.z, 1.0);
+                    ImGui::InputFloat("x",&Position.x ,  0.1, 1.0);
+                    ImGui::InputFloat("y",&Position.y ,  0.1, 1.0);
+                    ImGui::InputFloat("z",&Position.z ,  0.1, 1.0);
+                    light->position = glm::vec3(Position.x, Position.y, Position.z);
+                    ImGui::InputFloat("Constant", &light->constant, 0.1, 1.0);
+                    ImGui::InputFloat("Linear", &light->linear, 0.1, 1.0);
+                    ImGui::InputFloat("Quadratic", &light->quadratic, 0.01, 0.1);
+                }
+            }
+        }
         ImGui::End();
     }
 }
@@ -154,10 +173,10 @@ void processInput(GLFWwindow *window) {
         else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
         camera->switchToStatic(1);
     }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) {
         camera->switchToStatic(2);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
@@ -270,10 +289,6 @@ int main() {
 
 
     GameState gamestate = GameState("../data/GameScene.xml");
-    /* compile shader ---------------*/
-    Shader dummyShader(
-            "../shaders/dummy.vert",
-            "../shaders/dummy.frag");
 
     Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
     Shader heightMapShader = *gamestate.shaders.find("height")->second;
@@ -284,9 +299,7 @@ int main() {
                         glm::vec3(0.0f, 0.0f, -1.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    Model palm(
-            "/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
-    // Model portal("/home/matejs/Projects/School/PGR/PGR_semestral_linux/data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx");
+    Model palm("../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
 
     float scale = 0.2;
     float half_scale = scale / 2.0f;
@@ -302,7 +315,7 @@ int main() {
     glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
     /* Skybox texture ------------------------------------- */
-    #pragma region Skybox
+#pragma region Skybox
     float skyboxVertices[] = {
             // positions
             -1.0f, 1.0f, -1.0f,
@@ -386,18 +399,20 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    #pragma endregion
+#pragma endregion
 
-    Light* directionalLight = new DirectionalLight(glm::vec3(0.05, 0.05,0.05),
-                                      glm::vec3(0.4,0.4,0.4),
-                                      glm::vec3(0.05,0.05,0.05),
-                                      glm::vec3(-1,2,0));
-    Light* pointLight = new PointLight(glm::vec3(0, 0,0),
-                          glm::vec3(0.4,0.3,0.0),
-                          glm::vec3(0.4,0.3,0.0),
-                          glm::vec3(2,2,2),
-                          1.0f, 0.09f, 0.032f);
-
+    lights.push_back(new DirectionalLight(glm::vec3(0.2, 0.2, 0.2),
+                                          glm::vec3(0.4, 0.4, 0.4),
+                                          glm::vec3(0.05, 0.05, 0.05),
+                                          glm::vec3(-1, 2, 0)));
+    for (int i = 0; i < 6; i++) {
+        Light *pointLight = new PointLight(glm::vec3(1, 1, 1),
+                                           glm::vec3(1.0, 1.0, 1.0),
+                                           glm::vec3(1.0, 1.0, 1.0),
+                                           glm::vec3(1, 1, 1),
+                                           1.0f, 1.0f, 1.0f);
+        lights.push_back(pointLight);
+    }
     while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
@@ -429,48 +444,28 @@ int main() {
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);
 
-
         /* objects rendering */
         fragLightShader.use();
-        glm::vec3 lightPos = glm::vec3(lightRadius * glm::sin(glm::radians(lightAngle)), lightHeight,
-                                       lightRadius * glm::cos(glm::radians(lightAngle)));
+
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
-        glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0, 0));
         glm::mat4 cameraMatrix = camera->getViewMatrix();
-        // modelMatrix = glm::rotate(modelMatrix,glm::radians(90.0f) ,glm::vec3(1.0f, 0.0f, 0.0f));
 
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(xrotation), glm::vec3(1.0f, 0.0f, 0.0f));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(yrotation), glm::vec3(0.0f, 1.0f, 0.0f));
-        modelMatrix = glm::rotate(modelMatrix, glm::radians(zrotation), glm::vec3(0.0f, 0.0f, 1.0f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f, 0.05f, 0.05f));
+        for (Object object : gamestate.objects) {
+            object.shader->use();
+            object.shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object.transform.getTransformMat());
+            object.shader->setMat4fv("Model", object.transform.getTransformMat());
+            object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
 
-        fragLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-        fragLightShader.setMat4fv("Model", modelMatrix);
-        fragLightShader.setMat4fv("NormalModel", glm::transpose(glm::inverse(modelMatrix)));
-
-        fragLightShader.setBool("normalTexUsed", false);
-        fragLightShader.setVec3("cameraPosition", camera->getPos());
-        fragLightShader.setFloat("material.shininess", 30.0f);
-        fragLightShader.setInt("usedLights", 2);
-        directionalLight->setLightParam(0, fragLightShader);
-        pointLight->setLightParam(1, fragLightShader);
-//        fragLightShader.setInt("lights[0].type", 2);
-//        fragLightShader.setInt("lights[1].type", 1);
-//        fragLightShader.setInt("lights[2].type", 0);
-//
-//        fragLightShader.setVec3("lights[2].direction", lightPos);
-//        fragLightShader.setVec3("lights[2].ambient", 0.05f, 0.05f, 0.05f);
-//        fragLightShader.setVec3("lights[2].diffuse", 0.7f, 0.7f, 0.7f);
-//        fragLightShader.setVec3("lights[2].specular", 0.3f, 0.3f, 0.3f);
-//
-//        fragLightShader.setVec3("lights[1].position", lightPos);
-//        fragLightShader.setVec3("lights[1].ambient", 0.05f, 0.05f, 0.05f);
-//        fragLightShader.setVec3("lights[1].diffuse", 0.4f, 0.1f, 0.1f);
-//        fragLightShader.setVec3("lights[1].specular", 0.3f, 0.1f, 0.1f);
-//        fragLightShader.setFloat("lights[1].constant", 1.0f);
-//        fragLightShader.setFloat("lights[1].linear", 0.09f);
-//        fragLightShader.setFloat("lights[1].quadratic", 0.032f);
+            object.shader->setBool("normalTexUsed", false);
+            object.shader->setVec3("cameraPosition", camera->getPos());
+            object.shader->setFloat("material.shininess", 30.0f);
+            object.shader->setInt("usedLights", lights_used);
+            for(unsigned int i = 0; i < lights_used; i++){
+                lights[i]->setLightParam(i, *object.shader);
+            }
+            object.model->Draw(*object.shader);
+        }
 //
 //        fragLightShader.setVec3("lights[0].position", camera->getPos());
 //        fragLightShader.setVec3("lights[0].direction", camera->getFront());
@@ -482,22 +477,22 @@ int main() {
 //        fragLightShader.setFloat("lights[0].quadratic", 0.032f);
 //        fragLightShader.setFloat("lights[0].cutOff", glm::cos(glm::radians(12.5f)));
 //        fragLightShader.setFloat("lights[0].outerCutOff", glm::cos(glm::radians(20.0f)));
-        palm.Draw(fragLightShader);
+//        palm.Draw(fragLightShader);
         /* ---------------------------------------------------*/
         /* load height map */
-//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glm::mat4 modelMatrix = glm::mat4(1.0f);
         heightMapShader.use();
         heightMapShader.setVec3("cameraPosition", camera->getPos());
         heightMapShader.setFloat("material.shininess", 0.5f);
-        heightMapShader.setInt("usedLights", 2);
-        directionalLight->setLightParam(0, heightMapShader);
-        pointLight->setLightParam(1, heightMapShader);
+        heightMapShader.setInt("usedLights", lights_used);
+        for(unsigned int i = 0; i < lights_used; i++){
+            lights[i]->setLightParam(i, heightMapShader);
+        }
 
         modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
-        heightMapShader.setVec3("lightPos", lightPos);
         heightMapShader.setBool("normalTexUsed", true);
         terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
