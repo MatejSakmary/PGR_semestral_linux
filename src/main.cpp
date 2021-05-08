@@ -301,6 +301,7 @@ int main() {
 //    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
 //    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
+    /* Cubemap texture */
     while (!glfwWindowShouldClose(window)) {
 
         processInput(window);
@@ -340,14 +341,15 @@ int main() {
 
         fragLightShader.setVec3("cameraPosition", camera->getPos());
         fragLightShader.setFloat("material.shininess", 30.0f);
-        fragLightShader.setInt("usedLights", 2);
+        fragLightShader.setInt("usedLights", 3);
         fragLightShader.setInt("lights[0].type", 2);
         fragLightShader.setInt("lights[1].type", 1);
+        fragLightShader.setInt("lights[2].type", 0);
 
-//        fragLightShader.setVec3("lights[0].direction", lightPos);
-//        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
-//        fragLightShader.setVec3("lights[0].diffuse", 0.4f, 0.4f, 0.4f);
-//        fragLightShader.setVec3("lights[0].specular", 0.3f, 0.3f, 0.3f);
+        fragLightShader.setVec3("lights[2].direction", lightPos);
+        fragLightShader.setVec3("lights[2].ambient", 0.05f, 0.05f, 0.05f);
+        fragLightShader.setVec3("lights[2].diffuse", 0.7f, 0.7f, 0.7f);
+        fragLightShader.setVec3("lights[2].specular", 0.3f, 0.3f, 0.3f);
 
         fragLightShader.setVec3("lights[1].position", lightPos);
         fragLightShader.setVec3("lights[1].ambient", 0.05f, 0.05f, 0.05f);
