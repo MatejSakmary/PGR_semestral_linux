@@ -234,6 +234,7 @@ Model prepareTerrainModel(unsigned int terrainResolution, const char *heightTexP
 }
 
 int main() {
+    GameState gamestate = GameState();
     const char *glsl_version = "#version 130";
 
     glfwInit();

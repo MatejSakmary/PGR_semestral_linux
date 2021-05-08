@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <Models>
+        <Model name="portal"/>
+    </Models>
+    <Shaders>
+        <Shader atrribute="frag_light">
+            <vertex attribute="../shaders/fragment_light.vert"/>
+            <fragment attribute="../shaders/fragment_light.frag"/>
+        </Shader>
+        <Shader atrribute="height">
+            <vertex attribute="../shaders/fragment_light.vert"/>
+            <fragment attribute="../shaders/fragment_light.frag"/>
+        </Shader>
+    </Shaders>
+</Root>
