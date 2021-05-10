@@ -15,15 +15,12 @@
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 
 #include "stb_image.h"
 
 static std::vector<Light *> lights;
-static Camera *camera = NULL;
+static Camera *camera = nullptr;
 static float lightAngle = 0.0f;
-static float lightHeight = 1.0f;
-static float lightRadius = 1.0f;
 
 static float lastX = 0.0f;
 static float lastY = 0.0f;
@@ -33,9 +30,13 @@ static float lastFrame = 0.0f;
 static float pressDelay = -1.0f;
 static bool firstFrame = true;
 static bool mouseControl = false;
+static float scale = 0.17;
 
 bool show_another_window = false;
 bool show_Lights_window = false;
+bool show_Objects_window = false;
+static GameState* gameState_ptr = nullptr;
+
 ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 
 static int lights_used = 1;
@@ -57,15 +58,15 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
 }
 
 void ImGuiDraw() {
-    ImGui::Begin(
-            "Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
     ImGui::Text("use WASD to move around");
     ImGui::Text("use SPACE to fly up CTRL to fly downwards");
-    ImGui::Text(
-            "press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
+    ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
     ImGui::Checkbox("Camera Parameters", &show_another_window);
     ImGui::Checkbox("Light Parameters", &show_Lights_window);
+    ImGui::Checkbox("Objects Parameters", &show_Objects_window);
+    ImGui::SliderFloat("Terrain height scale", &scale, 0.0, 1.0);
 
     ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
@@ -93,10 +94,23 @@ void ImGuiDraw() {
         ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
         ImGui::End();
     }
-
+    if(show_Objects_window){
+        ImGui::Begin("Object Properties", &show_Objects_window);
+        for(unsigned int i = 0; i < gameState_ptr->objects.size(); i++)
+        {
+            Object& currObj = gameState_ptr->objects[i];
+            if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
+                ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform.position, -50.0f, 50.0f);
+                ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform.rotation,.0f, 360.0f);
+                ImGui::SliderFloat3(("Scale_" + std::to_string(i)).c_str(), (float*) &currObj.transform.scale,0.0f, 1.0f);
+            }
+        }
+        ImGui::End();
+    }
+    /* lights prop */
     if (show_Lights_window) {
         ImGui::Begin("Lights Properties", &show_Lights_window);
-        ImGui::SliderInt("Used Ligts", &lights_used, 1, 7);
+        ImGui::SliderInt("Used Lights", &lights_used, 1, 7);
 
         for(unsigned int i = 0; i <= 7; i++){
             if(ImGui::CollapsingHeader(("Light " + std::to_string(i)).c_str())){
@@ -169,7 +183,7 @@ void processInput(GLFWwindow *window) {
 
         pressDelay = 0.5f;
         mouseControl = !mouseControl;
-        if (mouseControl == true) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (mouseControl) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
     }
 
@@ -260,8 +274,8 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(1920, 1080, "PGR_Semestral", NULL, NULL);
-    if (window == NULL) {
+    GLFWwindow *window = glfwCreateWindow(1920, 1080, "PGR_Semestral", nullptr, nullptr);
+    if (window == nullptr) {
         std::cout << "failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
@@ -289,6 +303,7 @@ int main() {
 
 
     GameState gamestate = GameState("../data/GameScene.xml");
+    gameState_ptr = &gamestate;
 
     Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
     Shader heightMapShader = *gamestate.shaders.find("height")->second;
@@ -299,9 +314,6 @@ int main() {
                         glm::vec3(0.0f, 0.0f, -1.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    Model palm("../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx");
-
-    float scale = 0.2;
     float half_scale = scale / 2.0f;
 
     std::string heightFileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
@@ -310,9 +322,6 @@ int main() {
 
     Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
                                         diffuseFileName.c_str());
-    heightMapShader.use();
-    glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
-    glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
 
     /* Skybox texture ------------------------------------- */
 #pragma region Skybox
@@ -401,19 +410,21 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
 #pragma endregion
 
-    lights.push_back(new DirectionalLight(glm::vec3(0.2, 0.2, 0.2),
-                                          glm::vec3(0.4, 0.4, 0.4),
+    lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
+                                          glm::vec3(0.1, 0.13, 0.135),
                                           glm::vec3(0.05, 0.05, 0.05),
-                                          glm::vec3(-1, 2, 0)));
+                                          glm::vec3(-0.9, -0.4, 0.1)));
     for (int i = 0; i < 6; i++) {
-        Light *pointLight = new PointLight(glm::vec3(1, 1, 1),
-                                           glm::vec3(1.0, 1.0, 1.0),
-                                           glm::vec3(1.0, 1.0, 1.0),
-                                           glm::vec3(1, 1, 1),
-                                           1.0f, 1.0f, 1.0f);
+        Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
+                                           glm::vec3(1.0, 0.0, 0.0),
+                                           glm::vec3(1.0, 0.025, 0.025),
+                                           glm::vec3(18.8, -5.6, -18.4),
+                                           0.2f, 0.09f, 0.012f);
         lights.push_back(pointLight);
     }
     while (!glfwWindowShouldClose(window)) {
+        PointLight* poin = (PointLight*)lights[1];
+        poin->linear = (sin(glfwGetTime())+1)/10;
 
         processInput(window);
 
@@ -433,7 +444,7 @@ int main() {
 
         /* skybox rendering ---------------------------------*/
         glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
-                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
+                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
         glDepthMask(GL_FALSE);
         cubeMapShader.use();
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
@@ -448,7 +459,7 @@ int main() {
         fragLightShader.use();
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
-                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.0f);
+                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
         glm::mat4 cameraMatrix = camera->getViewMatrix();
 
         for (Object object : gamestate.objects) {
@@ -466,37 +477,25 @@ int main() {
             }
             object.model->Draw(*object.shader);
         }
-//
-//        fragLightShader.setVec3("lights[0].position", camera->getPos());
-//        fragLightShader.setVec3("lights[0].direction", camera->getFront());
-//        fragLightShader.setVec3("lights[0].ambient", 0.05f, 0.05f, 0.05f);
-//        fragLightShader.setVec3("lights[0].diffuse", 0.1f, 0.4f, 0.1f);
-//        fragLightShader.setVec3("lights[0].specular", 0.1f, 0.3f, 0.1f);
-//        fragLightShader.setFloat("lights[0].constant", 1.0f);
-//        fragLightShader.setFloat("lights[0].linear", 0.09f);
-//        fragLightShader.setFloat("lights[0].quadratic", 0.032f);
-//        fragLightShader.setFloat("lights[0].cutOff", glm::cos(glm::radians(12.5f)));
-//        fragLightShader.setFloat("lights[0].outerCutOff", glm::cos(glm::radians(20.0f)));
-//        palm.Draw(fragLightShader);
-        /* ---------------------------------------------------*/
         /* load height map */
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         heightMapShader.use();
         heightMapShader.setVec3("cameraPosition", camera->getPos());
         heightMapShader.setFloat("material.shininess", 0.5f);
         heightMapShader.setInt("usedLights", lights_used);
+        glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
+        glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
         for(unsigned int i = 0; i < lights_used; i++){
             lights[i]->setLightParam(i, heightMapShader);
         }
 
-        modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(100.0f, 100.0f, 100.0f));
+        modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(300.0f, 300.0f, 300.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
         heightMapShader.setBool("normalTexUsed", true);
         terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
-
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
