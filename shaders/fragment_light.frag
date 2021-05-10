@@ -44,15 +44,20 @@ uniform Material material;
 uniform Light lights[MAX_NUM_LIGHTS];
 uniform int usedLights;
 uniform bool normalTexUsed;
+uniform float a;
+uniform float b;
 
 out vec4 color;
 
 vec3 getDirectionalLight(Light light, vec3 normal, vec3 cameraDirection);
 vec3 getPointLight(Light light, vec3 normal, vec3 fragPosition,  vec3 cameraDirection);
 vec3 getSpotLight(Light light, vec3 normal, vec3 fragPosition,  vec3 cameraDirection);
+vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 cameraDirection);
 
 void main()
 {
+
+    float distance = distance(cameraPosition, fragPosition);
 	vec3 normal;
 	if( normalTexUsed == true){
 		// swap z with y because texture is in tangent space thus (0,0,1)
@@ -84,7 +89,22 @@ void main()
 			result += getSpotLight(lights[i], normal, fragPosition, cameraDirection);
 		}
 	}
+	result = applyFog(result, distance, cameraPosition, -cameraDirection);
 	color = vec4(result,1.0);
+}
+
+vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 cameraDirection){
+	float fogAmount = clamp((a/b) * exp(-cameraPosition.y * b) * (1.0 -exp( -distance * cameraDirection.y * b))/cameraDirection.y,0.0, 1.0);
+	vec3  fogColor = vec3(0.5, 0.4, 0.2);
+
+    if(usedLights >= 2){
+		vec3 lightDirection = normalize(lights[1].position - cameraPosition);
+		float lightIntensity = max( dot( cameraDirection, lightDirection), 0.0);
+        fogColor = mix(vec3(0.5, 0.4, 0.2),
+					   lights[1].diffuse,
+						pow(lightIntensity,30));
+	}
+	return mix(originalColor, fogColor, fogAmount);
 }
 
 vec3 getDirectionalLight(Light light, vec3 normal, vec3 cameraDirection)

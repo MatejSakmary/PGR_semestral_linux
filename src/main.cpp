@@ -31,6 +31,8 @@ static float pressDelay = -1.0f;
 static bool firstFrame = true;
 static bool mouseControl = false;
 static float scale = 0.17;
+static float a = 0.0035;
+static float b = 0.161;
 
 bool show_another_window = false;
 bool show_Lights_window = false;
@@ -39,7 +41,7 @@ static GameState* gameState_ptr = nullptr;
 
 ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
 
-static int lights_used = 1;
+static int lights_used = 2;
 
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
@@ -67,6 +69,8 @@ void ImGuiDraw() {
     ImGui::Checkbox("Light Parameters", &show_Lights_window);
     ImGui::Checkbox("Objects Parameters", &show_Objects_window);
     ImGui::SliderFloat("Terrain height scale", &scale, 0.0, 1.0);
+    ImGui::SliderFloat("fog a", &a, 0.0, 0.1);
+    ImGui::SliderFloat("fog b", &b, 0.0, 0.3);
 
     ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
@@ -374,12 +378,12 @@ int main() {
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
 
     std::vector<std::string> cubemapPaths;
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_rt.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_lf.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_up.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_dn.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_bk.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_ft.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_lf.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_rt.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_up.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_dn.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_ft.tga");
+    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_bk.tga");
 
     int width, height, nrChannels;
     unsigned char *data;
@@ -413,11 +417,11 @@ int main() {
     lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
                                           glm::vec3(0.1, 0.13, 0.135),
                                           glm::vec3(0.05, 0.05, 0.05),
-                                          glm::vec3(-0.9, -0.4, 0.1)));
+                                          glm::vec3(0.0, 0.1, 0.0)));
     for (int i = 0; i < 6; i++) {
         Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
-                                           glm::vec3(1.0, 0.0, 0.0),
-                                           glm::vec3(1.0, 0.025, 0.025),
+                                           glm::vec3(0.0, 0.0, 1.0),
+                                           glm::vec3(0.024, 0.024, 1.0),
                                            glm::vec3(18.8, -5.6, -18.4),
                                            0.2f, 0.09f, 0.012f);
         lights.push_back(pointLight);
@@ -468,6 +472,8 @@ int main() {
             object.shader->setMat4fv("Model", object.transform.getTransformMat());
             object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
 
+            object.shader->setFloat("a",a);
+            object.shader->setFloat("b",b);
             object.shader->setBool("normalTexUsed", false);
             object.shader->setVec3("cameraPosition", camera->getPos());
             object.shader->setFloat("material.shininess", 30.0f);
@@ -480,6 +486,8 @@ int main() {
         /* load height map */
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         heightMapShader.use();
+        heightMapShader.setFloat("a", a);
+        heightMapShader.setFloat("b", b);
         heightMapShader.setVec3("cameraPosition", camera->getPos());
         heightMapShader.setFloat("material.shininess", 0.5f);
         heightMapShader.setInt("usedLights", lights_used);
@@ -489,7 +497,8 @@ int main() {
             lights[i]->setLightParam(i, heightMapShader);
         }
 
-        modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(300.0f, 300.0f, 300.0f));
+        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        modelMatrix = glm::scale(modelMatrix, glm::vec3(300.0f, 300.0f, 300.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);

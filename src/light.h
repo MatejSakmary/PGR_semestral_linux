@@ -27,6 +27,7 @@ public:
 
 class DirectionalLight : public Light{
 public:
+    //Note -> Direction is specified from the light source to each fragment
     glm::vec3 direction;
     DirectionalLight(glm::vec3 ambient,glm::vec3 diffuse,
                      glm::vec3 specular, glm::vec3 direction) : direction{direction}
