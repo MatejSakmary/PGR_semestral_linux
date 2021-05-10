@@ -126,6 +126,11 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 {
     std::string filename = std::string(path);
     filename = filename.substr(filename.find_last_of("/\\")+1);
+    if(filename.substr(filename.find(".")) == ".tif"){
+        filename = filename.substr(0,filename.find_last_of(".")+1);
+        filename += "tga";
+    }
+
     filename = directory + "_textures/" + filename;
 
     unsigned int textureID;
@@ -154,7 +159,7 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 
         stbi_image_free(data);
     } else {
-        std::cout << "MODEL::TEXTURE FROM FILE::Failed to load at path: " << filename << std::endl;
+        std::cerr << "MODEL::TEXTURE FROM FILE::Failed to load at path: " << filename << std::endl;
     }
     return textureID;
 }

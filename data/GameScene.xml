@@ -3,6 +3,11 @@
     <Models>
         <Model name="palm"  path="../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx"/>
         <Model name="portal"  path="../data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx"/>
+        <Model name="plant"  path="../data/desert-plant/desert_plant_model/desert_plant1.fbx"/>
+        <Model name="cactus1"  path="../data/cactus/cactus_models/SW12_1.FBX"/>
+        <Model name="cactus2"  path="../data/cactus/cactus_models/SW12_2.FBX"/>
+        <Model name="cactus3"  path="../data/cactus/cactus_models/SW12_3.FBX"/>
+<!--        <Model name="windturbine"  path="../data/wind_turbine/wind_turbine_model/windrad_low.fbx"/>-->
     </Models>
     <Shaders>
         <Shader name="frag_light"
@@ -16,6 +21,31 @@
                 frag_path ="../shaders/cubemap.frag"/>
     </Shaders>
     <SceneObjects>
+<!--        <SceneObject modelName="windturbine" shaderName="frag_light">-->
+<!--            <Rotation x="0" y="0" z="0"/>-->
+<!--            <Position x="0" y="0" z="0"/>-->
+<!--            <Scale x="0.02" y="0.02" z="0.02"/>-->
+<!--        </SceneObject>-->
+        <SceneObject modelName="plant" shaderName="frag_light">
+            <Rotation x="270" y="0" z="0"/>
+            <Position x="-10" y="0" z="10"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
+        </SceneObject>
+        <SceneObject modelName="cactus3" shaderName="frag_light">
+            <Rotation x="270" y="0" z="0"/>
+            <Position x="-10" y="0" z="0"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
+        </SceneObject>
+        <SceneObject modelName="cactus1" shaderName="frag_light">
+            <Rotation x="270" y="0" z="0"/>
+            <Position x="10" y="0" z="0"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
+        </SceneObject>
+        <SceneObject modelName="cactus2" shaderName="frag_light">
+            <Rotation x="270" y="0" z="0"/>
+            <Position x="0" y="0" z="0"/>
+            <Scale x="0.05" y="0.05" z="0.05"/>
+        </SceneObject>
         <SceneObject modelName="palm" shaderName="frag_light">
             <Rotation x="270" y="0" z="0"/>
             <Position x="5.814" y="-22.093" z="-33.908"/>

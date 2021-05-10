@@ -378,13 +378,19 @@ int main() {
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
 
     std::vector<std::string> cubemapPaths;
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_lf.tga");
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_rt.tga");
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_up.tga");
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_dn.tga");
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_ft.tga");
-    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_bk.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_lf.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_rt.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_up.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_dn.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_ft.tga");
+//    cubemapPaths.push_back("../data/envmap_stormydays/stormydays_bk.tga");
 
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_rt.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_lf.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_up.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_dn.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_bk.tga");
+    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_ft.tga");
     int width, height, nrChannels;
     unsigned char *data;
     for (unsigned int i = 0; i < cubemapPaths.size(); i++) {
