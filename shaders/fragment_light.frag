@@ -78,6 +78,10 @@ void main()
 	if(usedLights <= 0){
 		result = vec3(1.0, 1.0, 1.0);
 	}
+	vec4 texColor = texture(material.texture_diffuse1, texCoords);
+	if(texColor.a < 0.1){
+		discard;
+	}
 
 	for(int i = 0; i < usedLights; i++)
 	{
