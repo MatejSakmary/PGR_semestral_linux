@@ -33,6 +33,8 @@ static bool mouseControl = false;
 static float scale = 0.17;
 static float a = 0.0035;
 static float b = 0.161;
+static float translation = 12;
+static float scaleCube = 150;
 
 bool show_another_window = false;
 bool show_Lights_window = false;
@@ -69,8 +71,10 @@ void ImGuiDraw() {
     ImGui::Checkbox("Light Parameters", &show_Lights_window);
     ImGui::Checkbox("Objects Parameters", &show_Objects_window);
     ImGui::SliderFloat("Terrain height scale", &scale, 0.0, 1.0);
-    ImGui::SliderFloat("fog a", &a, 0.0, 0.1);
-    ImGui::SliderFloat("fog b", &b, 0.0, 0.3);
+    ImGui::InputFloat("fog a", &a, 0.001, 0.01);
+    ImGui::InputFloat("fog b", &b, 0.001, 0.01);
+    ImGui::InputFloat("translation", &translation, 0.1, 1.0);
+    ImGui::InputFloat("scaleCube", &scaleCube, 1, 10.0);
 
     ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
 
@@ -460,7 +464,13 @@ int main() {
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
         cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(camera->getViewMatrix())));
         cubeMapShader.setMat4fv("projection", projectionMatrix1);
+        glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
+        modelMatrix1 = glm::scale(modelMatrix1, glm::vec3(scaleCube, scaleCube, scaleCube));
+        cubeMapShader.setMat4fv("model", modelMatrix1);
+        cubeMapShader.setVec3("cameraPosition", camera->getPos());
         cubeMapShader.setInt("cubemap", 0);
+        cubeMapShader.setFloat("a", a);
+        cubeMapShader.setFloat("b", b);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);

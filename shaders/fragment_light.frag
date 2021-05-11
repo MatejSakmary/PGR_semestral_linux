@@ -1,10 +1,13 @@
 #version 330 core
 
 struct Material{
+	bool oppacityPresent;
+
 	sampler2D texture_diffuse1;
 	sampler2D texture_specular1;
 	sampler2D texture_normal1;
 	sampler2D texture_height1;
+	sampler2D texture_oppacity1;
     float shininess;
 };
 
@@ -56,6 +59,19 @@ vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 came
 
 void main()
 {
+    // Oppacity check
+
+	vec4 texColor = texture(material.texture_diffuse1, texCoords);
+//	if(material.oppacityPresent){
+//		texColor = texture(material.texture_oppacity1, texCoords);
+//		if(texColor.r == 0){
+//			discard;
+//		}
+//	}
+	if(texColor.a < 0.1){
+		discard;
+	}
+
 
     float distance = distance(cameraPosition, fragPosition);
 	vec3 normal;
@@ -78,10 +94,6 @@ void main()
 	if(usedLights <= 0){
 		result = vec3(1.0, 1.0, 1.0);
 	}
-	vec4 texColor = texture(material.texture_diffuse1, texCoords);
-	if(texColor.a < 0.1){
-		discard;
-	}
 
 	for(int i = 0; i < usedLights; i++)
 	{
@@ -98,15 +110,15 @@ void main()
 }
 
 vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 cameraDirection){
-	float fogAmount = clamp((a/b) * exp(-cameraPosition.y * b) * (1.0 -exp( -distance * cameraDirection.y * b))/cameraDirection.y,0.0, 1.0);
-	vec3  fogColor = vec3(0.5, 0.4, 0.2);
+	float fogAmount = clamp(a * exp(-cameraPosition.y * b) * (1.0 -exp(-distance * cameraDirection.y * b))/cameraDirection.y,0.0,0.8);
+	vec3  fogColor = vec3(0.5, 0.6, 0.7);
 
     if(usedLights >= 2){
 		vec3 lightDirection = normalize(lights[1].position - cameraPosition);
 		float lightIntensity = max( dot( cameraDirection, lightDirection), 0.0);
-        fogColor = mix(vec3(0.5, 0.4, 0.2),
+        fogColor = mix(vec3(0.5, 0.6, 0.7),
 					   lights[1].diffuse,
-						pow(lightIntensity,30));
+						pow(lightIntensity,60));
 	}
 	return mix(originalColor, fogColor, fogAmount);
 }

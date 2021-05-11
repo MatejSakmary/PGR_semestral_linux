@@ -1,10 +1,13 @@
 #version 330 core
 
 struct Material{
+	bool oppacityPresent;
+
 	sampler2D texture_diffuse1;
 	sampler2D texture_specular1;
 	sampler2D texture_normal1;
 	sampler2D texture_height1;
+	sampler2D texture_oppacity1;
 	float shininess;
 };
 

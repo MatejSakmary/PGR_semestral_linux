@@ -92,12 +92,15 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     /* load material only if model has a material specified */
     if(mesh->mMaterialIndex >= 0)
     {
+
         /* load material */
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
         std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
         std::vector<Texture> specualMaps = loadMaterialTextures(material,aiTextureType_SPECULAR, "texture_specular");
         textures.insert(textures.end(), specualMaps.begin(),specualMaps.end());
+        std::vector<Texture> oppacityMaps = loadMaterialTextures(material, aiTextureType_OPACITY, "texture_oppacity");
+        textures.insert(textures.end(), oppacityMaps.begin(), oppacityMaps.end());
     }
     std::cout << "MODEL::PROCESS MESH::Processing mesh done" << std::endl << std::endl;
     return Mesh(vertices, indices, textures);
@@ -149,7 +152,6 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
         {
             format = GL_RGBA;
         }
-
 
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexImage2D( GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);

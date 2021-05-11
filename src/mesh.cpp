@@ -43,6 +43,7 @@ void Mesh::Draw(Shader &shader)
     unsigned int specularNum = 1;
     unsigned int heightNum = 1;
     unsigned int normalNum = 1;
+    unsigned int oppacityNum = 1;
 
     shader.use();
     /* go through all the loaded textures*/
@@ -61,8 +62,11 @@ void Mesh::Draw(Shader &shader)
             number = std::to_string(heightNum++);
         }else if (name == "texture_normal"){
             number = std::to_string(normalNum++);
+        }else if (name == "texture_oppacity") {
+            number = std::to_string(oppacityNum++);
+            shader.setBool("material.oppacityPresent", true);
         }else{
-            std::cout << "MESH::DRAW::Error binding texture unknown texture type " << name << std::endl;
+            std::cerr << "MESH::DRAW::Error binding texture unknown texture type " << name << std::endl;
         }
 
         // this sets texture sampler with name and corresponding number in the shader

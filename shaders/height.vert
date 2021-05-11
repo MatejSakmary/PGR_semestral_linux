@@ -3,12 +3,16 @@
 layout (location = 0) in vec3 aPosition;
 
 struct Material{
+    bool oppacityPresent;
+
     sampler2D texture_diffuse1;
     sampler2D texture_specular1;
     sampler2D texture_normal1;
     sampler2D texture_height1;
+    sampler2D texture_oppacity1;
     float shininess;
 };
+
 
 uniform Material material;
 uniform mat4 PVMmatrix;
