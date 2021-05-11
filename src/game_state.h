@@ -14,6 +14,11 @@
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
 
+typedef struct{
+    float density;
+    float treshold;
+}FogParams;
+
 typedef struct {
     Model* model;
     Shader* shader;
@@ -28,17 +33,14 @@ typedef struct{
     bool firstMouseInput;
 }MouseParameters;
 
-typedef struct{
-    glm::vec4 clearColor;
-}RenderParameters;
-
 class GameState{
 public:
+    int lightsUsed;
     float deltaTime;
     Camera *camera;
     MouseParameters mouseParameters;
-    RenderParameters renderParameters;
-    std::vector<Light> lights;
+    FogParams fogParams;
+    std::vector<Light*> lights;
     std::vector<Object> objects;
     std::unordered_map<std::string,Shader*> shaders;
     std::unordered_map<std::string,Model*> models;

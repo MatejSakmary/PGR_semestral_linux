@@ -10,41 +10,24 @@
 #include "camera.h"
 #include "model.h"
 #include "utils.h"
-#include "game_state.h"
 #include "light.h"
+#include "game_state.h"
+#include "imgui_state.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 #include "stb_image.h"
 
-static std::vector<Light *> lights;
-static Camera *camera = nullptr;
-static float lightAngle = 0.0f;
-
-static float lastX = 0.0f;
-static float lastY = 0.0f;
 
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
-static float pressDelay = -1.0f;
-static bool firstFrame = true;
-static bool mouseControl = false;
 static float scale = 0.17;
-static float a = 0.0035;
-static float b = 0.161;
 static float translation = 12;
 static float scaleCube = 150;
 
-bool show_another_window = false;
-bool show_Lights_window = false;
-bool show_Objects_window = false;
 static GameState* gameState_ptr = nullptr;
-
-ImVec4 clear_color = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
-
-static int lights_used = 2;
-
+static ImguiState* imguiState_ptr = nullptr;
 
 void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
     float vertices[] = {
@@ -61,163 +44,71 @@ void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
     glEnableVertexAttribArray(0);
 }
 
-void ImGuiDraw() {
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-    ImGui::Text("use WASD to move around");
-    ImGui::Text("use SPACE to fly up CTRL to fly downwards");
-    ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
-    ImGui::Checkbox("Camera Parameters", &show_another_window);
-    ImGui::Checkbox("Light Parameters", &show_Lights_window);
-    ImGui::Checkbox("Objects Parameters", &show_Objects_window);
-    ImGui::SliderFloat("Terrain height scale", &scale, 0.0, 1.0);
-    ImGui::InputFloat("fog a", &a, 0.001, 0.01);
-    ImGui::InputFloat("fog b", &b, 0.001, 0.01);
-    ImGui::InputFloat("translation", &translation, 0.1, 1.0);
-    ImGui::InputFloat("scaleCube", &scaleCube, 1, 10.0);
-
-    ImGui::ColorEdit3("clear color", (float *) &clear_color); // Edit 3 floats representing a color
-
-    for (unsigned int i = 0; i < 2; i++) {
-        if (ImGui::Button(("Switch to camera " + std::to_string(i + 1)).c_str())) {
-            camera->switchToStatic(i + 1);
-            ImGui::SameLine();
-        }
-    }
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate,
-                ImGui::GetIO().Framerate);
-    ImGui::End();
-
-    // 3. Show another simple window.
-    if (show_another_window) {
-        glm::vec3 cameraPos = camera->getPos();
-        ImGui::Begin("Camera Parameters",&show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        if (ImGui::Button("Close")) { show_another_window = false; }
-        ImGui::Text("Camera position is");
-        ImGui::Text("x: %f", cameraPos.x);
-        ImGui::SameLine();
-        ImGui::Text("y: %f", cameraPos.y);
-        ImGui::SameLine();
-        ImGui::Text("z: %f", cameraPos.z);
-        ImGui::Text("Yaw: %f   Pitch: %f", camera->getYaw(), camera->getPitch());
-        ImGui::End();
-    }
-    if(show_Objects_window){
-        ImGui::Begin("Object Properties", &show_Objects_window);
-        for(unsigned int i = 0; i < gameState_ptr->objects.size(); i++)
-        {
-            Object& currObj = gameState_ptr->objects[i];
-            if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
-                ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform.position, -50.0f, 50.0f);
-                ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform.rotation,.0f, 360.0f);
-                ImGui::SliderFloat3(("Scale_" + std::to_string(i)).c_str(), (float*) &currObj.transform.scale,0.0f, 1.0f);
-            }
-        }
-        ImGui::End();
-    }
-    /* lights prop */
-    if (show_Lights_window) {
-        ImGui::Begin("Lights Properties", &show_Lights_window);
-        ImGui::SliderInt("Used Lights", &lights_used, 1, 7);
-
-        for(unsigned int i = 0; i <= 7; i++){
-            if(ImGui::CollapsingHeader(("Light " + std::to_string(i)).c_str())){
-                ImVec4 Ambient = ImVec4(lights[i]->ambient.x,lights[i]->ambient.y,lights[i]->ambient.z,1.0);
-                ImVec4 Diffuse = ImVec4(lights[i]->diffuse.x,lights[i]->diffuse.y,lights[i]->diffuse.z,1.0);
-                ImVec4 Specular = ImVec4(lights[i]->specular.x,lights[i]->specular.y,lights[i]->specular.z,1.0);
-                ImGui::ColorEdit3("Ambient",(float*)&Ambient);
-                ImGui::ColorEdit3("Diffuse",(float*)&Diffuse);
-                ImGui::ColorEdit3("Specular",(float*)&Specular);
-                lights[i]->ambient = glm::vec3(Ambient.x, Ambient.y, Ambient.z);
-                lights[i]->diffuse = glm::vec3(Diffuse.x, Diffuse.y, Diffuse.z);
-                lights[i]->specular = glm::vec3(Specular.x, Specular.y, Specular.z);
-
-                if( lights[i]->type == DIRECTIONAL_LIGHT){
-                    ImGui::Text("Direction");
-                    auto* light = (DirectionalLight*)lights[i];
-                    ImVec4 Direction = ImVec4(light->direction.x, light->direction.y, light->direction.z, 1.0);
-                    ImGui::InputFloat("x",&Direction.x , 0.1, 1.0);
-                    ImGui::InputFloat("y",&Direction.y , 0.1, 1.0);
-                    ImGui::InputFloat("z",&Direction.z , 0.1, 1.0);
-                    light->direction = glm::vec3(Direction.x, Direction.y, Direction.z);
-                } else {
-                    ImGui::Text("Position");
-                    auto* light = (PointLight*)lights[i];
-                    ImVec4 Position = ImVec4(light->position.x, light->position.y, light->position.z, 1.0);
-                    ImGui::InputFloat("x",&Position.x ,  0.1, 1.0);
-                    ImGui::InputFloat("y",&Position.y ,  0.1, 1.0);
-                    ImGui::InputFloat("z",&Position.z ,  0.1, 1.0);
-                    light->position = glm::vec3(Position.x, Position.y, Position.z);
-                    ImGui::InputFloat("Constant", &light->constant, 0.1, 1.0);
-                    ImGui::InputFloat("Linear", &light->linear, 0.1, 1.0);
-                    ImGui::InputFloat("Quadratic", &light->quadratic, 0.01, 0.1);
-                }
-            }
-        }
-        ImGui::End();
-    }
-}
-
 void mouseCallback(GLFWwindow *window, double x, double y) {
-    if (!mouseControl) return;
+    if (!gameState_ptr->mouseParameters.mouseControl) return;
 
-    if (firstFrame) {
-        lastX = x;
-        lastY = y;
-        firstFrame = false;
+    if (gameState_ptr->mouseParameters.firstMouseInput) {
+        gameState_ptr->mouseParameters.lastX = x;
+        gameState_ptr->mouseParameters.lastY = y;
+        gameState_ptr->mouseParameters.firstMouseInput = false;
     }
 
-    float xoffset = x - lastX;
-    float yoffset = lastY - y;
-    lastX = x;
-    lastY = y;
-    camera->updateFrontVec(xoffset, yoffset);
+    float xoffset = x - gameState_ptr->mouseParameters.lastX;
+    float yoffset = gameState_ptr->mouseParameters.lastY - y;
+    gameState_ptr->mouseParameters.lastX = x;
+    gameState_ptr->mouseParameters.lastY = y;
+    gameState_ptr->camera->updateFrontVec(xoffset, yoffset);
 }
 
 void processInput(GLFWwindow *window) {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-    pressDelay -= deltaTime;
+    gameState_ptr->mouseParameters.pressDelay -= deltaTime;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS && (pressDelay < 0)) {
-        if (mouseControl)
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS &&
+       (gameState_ptr->mouseParameters.pressDelay < 0)) {
+        if (gameState_ptr->mouseParameters.mouseControl)
             std::cout << "mouse control is now enabled" << std::endl;
         else
             std::cout << "mouse control is now disabled" << std::endl;
+            gameState_ptr->mouseParameters.firstMouseInput = true;
 
-        pressDelay = 0.5f;
-        mouseControl = !mouseControl;
-        if (mouseControl) glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        else glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        gameState_ptr->mouseParameters.pressDelay = 0.5f;
+        gameState_ptr->mouseParameters.mouseControl = !gameState_ptr->mouseParameters.mouseControl;
+        if (gameState_ptr->mouseParameters.mouseControl) {
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        } else{
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
     }
 
     if (glfwGetKey(window, GLFW_KEY_F1) == GLFW_PRESS) {
-        camera->switchToStatic(1);
+        gameState_ptr->camera->switchToStatic(1);
     }
     if (glfwGetKey(window, GLFW_KEY_F2) == GLFW_PRESS) {
-        camera->switchToStatic(2);
+        gameState_ptr->camera->switchToStatic(2);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        camera->forward(deltaTime);
+        gameState_ptr->camera->forward(deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        camera->back(deltaTime);
+        gameState_ptr->camera->back(deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        camera->left(deltaTime);
+        gameState_ptr->camera->left(deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        camera->right(deltaTime);
+        gameState_ptr-> camera->right(deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        camera->up(deltaTime);
+        gameState_ptr->camera->up(deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        camera->down(deltaTime);
+        gameState_ptr->camera->down(deltaTime);
     }
 }
 
@@ -311,16 +202,13 @@ int main() {
 
 
     GameState gamestate = GameState("../data/GameScene.xml");
+    ImguiState imguiState = ImguiState();
+    imguiState_ptr = &imguiState;
     gameState_ptr = &gamestate;
 
     Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
     Shader heightMapShader = *gamestate.shaders.find("height")->second;
     Shader fragLightShader = *gamestate.shaders.find("frag_light")->second;
-
-    /* setup camera ---------------*/
-    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
-                        glm::vec3(0.0f, 0.0f, -1.0f),
-                        glm::vec3(0.0f, 1.0f, 0.0f));
 
     float half_scale = scale / 2.0f;
 
@@ -332,7 +220,7 @@ int main() {
                                         diffuseFileName.c_str());
 
     /* Skybox texture ------------------------------------- */
-#pragma region Skybox
+    #pragma region Skybox
     float skyboxVertices[] = {
             // positions
             -1.0f, 1.0f, -1.0f,
@@ -422,9 +310,9 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-#pragma endregion
+    #pragma endregion
 
-    lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
+    gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
                                           glm::vec3(0.1, 0.13, 0.135),
                                           glm::vec3(0.05, 0.05, 0.05),
                                           glm::vec3(0.0, 0.1, 0.0)));
@@ -434,11 +322,11 @@ int main() {
                                            glm::vec3(0.024, 0.024, 1.0),
                                            glm::vec3(18.8, -5.6, -18.4),
                                            0.2f, 0.09f, 0.012f);
-        lights.push_back(pointLight);
+        gamestate.lights.push_back(pointLight);
     }
     while (!glfwWindowShouldClose(window)) {
-        PointLight* poin = (PointLight*)lights[1];
-        poin->linear = (sin(glfwGetTime())+1)/10;
+        PointLight* point = (PointLight*)gamestate.lights[1];
+        point->linear = (sin(glfwGetTime())+1)/10;
 
         processInput(window);
 
@@ -447,40 +335,41 @@ int main() {
         ImGui::NewFrame();
         ImGuiIO &io = ImGui::GetIO();
 
-        ImGuiDraw();
+        imguiState_ptr->ImguiDraw(gamestate);
         ImGui::Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w,
-                     clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* skybox rendering ---------------------------------*/
+        #pragma region skybox
         glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
                                                        io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
         glDepthMask(GL_FALSE);
         cubeMapShader.use();
         glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxID);
-        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(camera->getViewMatrix())));
+        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix())));
         cubeMapShader.setMat4fv("projection", projectionMatrix1);
         glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
         modelMatrix1 = glm::scale(modelMatrix1, glm::vec3(scaleCube, scaleCube, scaleCube));
         cubeMapShader.setMat4fv("model", modelMatrix1);
-        cubeMapShader.setVec3("cameraPosition", camera->getPos());
+        cubeMapShader.setVec3("cameraPosition", gameState_ptr->camera->getPos());
         cubeMapShader.setInt("cubemap", 0);
-        cubeMapShader.setFloat("a", a);
-        cubeMapShader.setFloat("b", b);
+        cubeMapShader.setFloat("a", gamestate.fogParams.density);
+        cubeMapShader.setFloat("b", gamestate.fogParams.treshold);
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthMask(GL_TRUE);
 
+        #pragma endregion
         /* objects rendering */
+        #pragma region objects
         fragLightShader.use();
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
-        glm::mat4 cameraMatrix = camera->getViewMatrix();
+        glm::mat4 cameraMatrix = gameState_ptr->camera->getViewMatrix();
 
         for (Object object : gamestate.objects) {
             object.shader->use();
@@ -488,29 +377,31 @@ int main() {
             object.shader->setMat4fv("Model", object.transform.getTransformMat());
             object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
 
-            object.shader->setFloat("a",a);
-            object.shader->setFloat("b",b);
+            object.shader->setFloat("a",gamestate.fogParams.density);
+            object.shader->setFloat("b",gamestate.fogParams.treshold);
             object.shader->setBool("normalTexUsed", false);
-            object.shader->setVec3("cameraPosition", camera->getPos());
+            object.shader->setVec3("cameraPosition", gameState_ptr->camera->getPos());
             object.shader->setFloat("material.shininess", 30.0f);
-            object.shader->setInt("usedLights", lights_used);
-            for(unsigned int i = 0; i < lights_used; i++){
-                lights[i]->setLightParam(i, *object.shader);
+            object.shader->setInt("usedLights", gamestate.lightsUsed);
+            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+                gamestate.lights[i]->setLightParam(i, *object.shader);
             }
             object.model->Draw(*object.shader);
         }
-        /* load height map */
+        #pragma endregion
+        /* height map rendering */
+        #pragma region heightMap
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         heightMapShader.use();
-        heightMapShader.setFloat("a", a);
-        heightMapShader.setFloat("b", b);
-        heightMapShader.setVec3("cameraPosition", camera->getPos());
+        heightMapShader.setFloat("a", gamestate.fogParams.density);
+        heightMapShader.setFloat("b", gamestate.fogParams.treshold);
+        heightMapShader.setVec3("cameraPosition", gameState_ptr->camera->getPos());
         heightMapShader.setFloat("material.shininess", 0.5f);
-        heightMapShader.setInt("usedLights", lights_used);
+        heightMapShader.setInt("usedLights", gamestate.lightsUsed);
         glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
         glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
-        for(unsigned int i = 0; i < lights_used; i++){
-            lights[i]->setLightParam(i, heightMapShader);
+        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+            gamestate.lights[i]->setLightParam(i, heightMapShader);
         }
 
         modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -521,6 +412,7 @@ int main() {
         heightMapShader.setBool("normalTexUsed", true);
         terrain.Draw(heightMapShader);
         CHECK_GL_ERROR();
+        #pragma endregion
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);

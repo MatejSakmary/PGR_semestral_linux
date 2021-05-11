@@ -4,6 +4,15 @@
 #include "game_state.h"
 GameState::GameState(std::string xmlPath)
 {
+    lightsUsed = 1;
+    mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
+                                     false, true});
+    fogParams = FogParams({0.165, 0.08});
+
+    camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
+                        glm::vec3(0.0f, 0.0f, -1.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f));
+
     rapidxml::xml_document<> doc;
 
     /* read xml doc for parsing */
