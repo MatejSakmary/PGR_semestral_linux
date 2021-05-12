@@ -7,7 +7,7 @@ EXE = semestral
 SRC_DIR = src
 
 SOURCES = src/main.cpp vendor/glad/glad.c src/shader.cpp src/camera.cpp src/mesh.cpp src/model.cpp vendor/stb_image/stb_image.cpp
-SOURCES += src/utils.cpp src/game_state.cpp src/light.cpp src/transform.cpp src/imgui_state.cpp
+SOURCES += src/utils.cpp src/game_state.cpp src/light.cpp src/transform.cpp src/imgui_state.cpp src/bezier.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 
