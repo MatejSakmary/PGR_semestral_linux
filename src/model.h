@@ -17,6 +17,7 @@
 class Model
 {
     public:
+        std::string(path);
         Model(const char* path)
         {
             loadModel(path);

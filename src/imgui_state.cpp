@@ -8,6 +8,7 @@ void ImguiState::ImguiDraw(GameState &gameState)
 {
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
+    if(ImGui::Button("Export XML")){ gameState.writeToXML();}
     ImGui::Text("use WASD to move around");
     ImGui::Text("use SPACE to fly up CTRL to fly downwards");
     ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)

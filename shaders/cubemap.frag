@@ -4,7 +4,9 @@ out vec4 FragColor;
 in vec3 TexCoords;
 in vec3 fragPosition;
 
-uniform samplerCube cubemap;
+uniform samplerCube nightCubemap;
+uniform samplerCube dayCubemap;
+uniform float mixVal;
 uniform vec3 cameraPosition;
 uniform float a;
 uniform float b;
@@ -28,7 +30,9 @@ void main()
 {
     vec3 cameraDirection = normalize(cameraPosition - fragPosition);
     float distance = distance(vec3(0.0,0.0,0.0), fragPosition);
-    vec3 color = vec3(texture(cubemap, TexCoords));
+    vec3 color = mix(vec3(texture(dayCubemap, TexCoords)),
+                     vec3(texture(nightCubemap, TexCoords)),
+                     mixVal);
 
     color = applyFog(color, distance, cameraPosition, -cameraDirection);
     FragColor = vec4(color,1.0f);

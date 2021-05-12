@@ -10,6 +10,8 @@
 #include "transform.h"
 
 #include "rapidxml/rapidxml.hpp"
+//#include "rapidxml/rapidxml_print.hpp"
+//#include "rapidxml/rapidxml_ext.h"
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
@@ -44,11 +46,14 @@ public:
     std::vector<Object> objects;
     std::unordered_map<std::string,Shader*> shaders;
     std::unordered_map<std::string,Model*> models;
+
+    rapidxml::xml_document<>* gameScene;
     GameState(std::string xmlPath);
+    void writeToXML();
 
 private:
-    unsigned int loadShaders(rapidxml::xml_document<>* gameScene);
-    unsigned int loadModels(rapidxml::xml_document<>* gameScene);
-    unsigned int loadObjectInstances(rapidxml::xml_document<>* gameScene);
+    unsigned int loadShaders();
+    unsigned int loadModels();
+    unsigned int loadObjectInstances();
 
 };

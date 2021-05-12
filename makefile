@@ -21,7 +21,7 @@ $(OBJDIR)%.o:$(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)%.o:$(IMGUI_DIR)/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES)-c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)%.o:$(IMGUI_DIR)/backends/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $<

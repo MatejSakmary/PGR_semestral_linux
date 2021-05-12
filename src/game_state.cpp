@@ -13,7 +13,7 @@ GameState::GameState(std::string xmlPath)
                         glm::vec3(0.0f, 0.0f, -1.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f));
 
-    rapidxml::xml_document<> doc;
+    gameScene = new rapidxml::xml_document<>();
 
     /* read xml doc for parsing */
     std::ifstream file(xmlPath);
@@ -23,19 +23,19 @@ GameState::GameState(std::string xmlPath)
     std::string content(buffer.str());
 
     /* Parising xml */
-    doc.parse<0>(&content[0]);
+    gameScene->parse<0>(&content[0]);
 
-    unsigned int shaderCnt = loadShaders(&doc);
+    unsigned int shaderCnt = loadShaders();
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
 
-    unsigned int modelsCnt = loadModels(&doc);
+    unsigned int modelsCnt = loadModels();
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
 
-    unsigned int objectsCnt = loadObjectInstances(&doc);
+    unsigned int objectsCnt = loadObjectInstances();
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
 }
 
-unsigned int GameState::loadShaders(rapidxml::xml_document<> *gameScene)
+unsigned int GameState::loadShaders()
 {
     unsigned int foundShadresCount = 0;
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
@@ -59,7 +59,7 @@ unsigned int GameState::loadShaders(rapidxml::xml_document<> *gameScene)
     }
     return foundShadresCount;
 }
-unsigned int GameState::loadModels(rapidxml::xml_document<> *gameScene) {
+unsigned int GameState::loadModels() {
     unsigned int foundModelsCount = 0;
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
     rapidxml::xml_node<> *modelsNode = rootNode->first_node("Models");
@@ -82,7 +82,7 @@ unsigned int GameState::loadModels(rapidxml::xml_document<> *gameScene) {
     return foundModelsCount;
 }
 
-unsigned int GameState::loadObjectInstances(rapidxml::xml_document<>* gameScene){
+unsigned int GameState::loadObjectInstances(){
     unsigned int foundObjectsCount = 0;
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
     rapidxml::xml_node<> *sceneObjectsNode = rootNode->first_node("SceneObjects");
@@ -125,4 +125,42 @@ unsigned int GameState::loadObjectInstances(rapidxml::xml_document<>* gameScene)
         foundObjectsCount++;
     }
     return foundObjectsCount;
+}
+
+void GameState::writeToXML() {
+    rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
+//    std::cout << "here1" << std::endl;
+//    rapidxml::xml_node<> *modelsNode = rootNode->first_node("Models");
+//    std::cout << "here2" << std::endl;
+//
+//    rapidxml::xml_node<> *modelNode = modelsNode->first_node("Model");
+//    modelNode->first_attribute("name")->value("asdfasdf");
+//    rapidxml::xml_document<> exportDoc;
+//    rapidxml::xml_node<>* decl = exportDoc.allocate_node(rapidxml::node_declaration);
+//    decl->append_attribute(exportDoc.allocate_attribute("version","1.0"));
+//    decl->append_attribute(exportDoc.allocate_attribute("encoding","utf-8"));
+//    exportDoc.append_node(decl);
+//
+//    rapidxml::xml_node<>* root = exportDoc.allocate_node(rapidxml::node_element, "Root");
+//    rapidxml::xml_node<>* modelsNode = exportDoc.allocate_node(rapidxml::node_element, "Models");
+//    for(auto& model : models){
+//        rapidxml::xml_node<>* modelNode = exportDoc.allocate_node(rapidxml::node_element, "Model");
+//        char* nodeName = exportDoc.allocate_string(model.first.c_str());
+//        char* nodePath = exportDoc.allocate_string(model.second->path.c_str());
+//        modelNode->append_attribute(exportDoc.allocate_attribute("name", nodeName));
+//        modelNode->append_attribute(exportDoc.allocate_attribute("path", nodePath));
+//        modelsNode->append_node(modelNode);
+//    }
+//    root->append_node(modelsNode);
+//    exportDoc.append_node( root );
+//
+//    std::cout << "here3" << std::endl;
+//    std::string(xml_as_string);
+//    std::ofstream fileStore("export.xml");
+//    std::cout << *gameScene << std::endl;
+
+//    rapidxml::print(std::back_inserter(xml_as_string), *gameScene);
+//    fileStore << xml_as_string;
+//    fileStore.close();
+//    gameScene.clear();
 }
