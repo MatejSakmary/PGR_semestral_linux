@@ -7,7 +7,6 @@
 
 #include <GLFW/glfw3.h>
 #include "shader.h"
-#include "camera.h"
 #include "model.h"
 #include "utils.h"
 #include "light.h"
@@ -183,7 +182,6 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, mouseCallback);
 
-
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
@@ -201,8 +199,6 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-
-//    GameState gamestate = GameState("../data/GameScene.xml");
     GameState gamestate = GameState("export.xml");
     ImguiState imguiState = ImguiState();
     imguiState_ptr = &imguiState;
@@ -373,9 +369,10 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         /* skybox rendering ---------------------------------*/
-        #pragma region skybox
         glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
                                                        io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
+        #pragma region skybox
+        /* bind textures */
         glDepthMask(GL_FALSE);
         cubeMapShader.use();
         glActiveTexture(GL_TEXTURE0);
@@ -387,6 +384,7 @@ int main() {
         cubeMapShader.setInt("dayCubemap", 1);
         glActiveTexture(GL_TEXTURE0);
         CHECK_GL_ERROR();
+        /* draw Skybox */
         glm::mat4 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()), glm::vec3(0.0, 1.0, 0.0));
         cubeMapShader.setMat4fv("rotation", rotationMat);
         cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix(t))));

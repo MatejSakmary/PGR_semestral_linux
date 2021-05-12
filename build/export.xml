@@ -6,6 +6,9 @@
 		<Model name="cactus1" path="../data/cactus/cactus_models/SW12_1.FBX"/>
 		<Model name="cactus2" path="../data/cactus/cactus_models/SW12_2.FBX"/>
 		<Model name="cactus3" path="../data/cactus/cactus_models/SW12_3.FBX"/>
+		<Model name="rock1" path="../data/rocks/rocks_model/rock_01_a.fbx"/>
+		<Model name="rock2" path="../data/rocks/rocks_model/rock_01_b.fbx"/>
+		<Model name="rock3" path="../data/rocks/rocks_model/rock_01_c.fbx"/>
 	</Models>
 	<Shaders>
 		<Shader name="frag_light" vert_path="../shaders/fragment_light.vert" frag_path="../shaders/fragment_light.frag"/>
@@ -13,6 +16,21 @@
 		<Shader name="cubemap" vert_path="../shaders/cubemap.vert" frag_path="../shaders/cubemap.frag"/>
 	</Shaders>
 	<SceneObjects>
+		<SceneObject modelName="rock1" shaderName="frag_light">
+			<Rotation x="21.176001" y="0.000000" z="0.000000"/>
+			<Position x="0.000000" y="-20.587999" z="-33.824001"/>
+			<Scale x="0.015000" y="0.015000" z="0.015000"/>
+		</SceneObject>
+		<SceneObject modelName="rock2" shaderName="frag_light">
+			<Rotation x="0.000000" y="0.000000" z="0.000000"/>
+			<Position x="-2.941000" y="-19.118000" z="-38.235001"/>
+			<Scale x="0.015000" y="0.015000" z="0.015000"/>
+		</SceneObject>
+		<SceneObject modelName="rock3" shaderName="frag_light">
+			<Rotation x="322.941010" y="180.000000" z="0.000000"/>
+			<Position x="1.471000" y="-20.587999" z="0.000000"/>
+			<Scale x="0.088000" y="0.088000" z="0.088000"/>
+		</SceneObject>
 		<SceneObject modelName="plant" shaderName="frag_light">
 			<Rotation x="256.500000" y="0.000000" z="0.000000"/>
 			<Position x="-10.000000" y="-14.500000" z="10.000000"/>
