@@ -14,7 +14,7 @@ void ImguiState::ImguiDraw(GameState &gameState)
     ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
     ImGui::Checkbox("Camera Parameters", &showCamWindow);
     ImGui::Checkbox("Light Parameters", &showLightsWindow);
-    ImGui::Checkbox("Objects Parameters", &showLightsWindow);
+    ImGui::Checkbox("Objects Parameters", &showObjectsWindow);
     ImGui::InputFloat("fog a", &gameState.fogParams.density, 0.001, 0.01);
     ImGui::InputFloat("fog b", &gameState.fogParams.treshold, 0.001, 0.01);
 

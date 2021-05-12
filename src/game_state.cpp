@@ -20,10 +20,10 @@ GameState::GameState(std::string xmlPath)
     std::stringstream buffer;
     buffer << file.rdbuf();
     file.close();
-    std::string content(buffer.str());
+    xmlContent = buffer.str();
 
     /* Parising xml */
-    gameScene->parse<0>(&content[0]);
+    gameScene->parse<0>(&xmlContent[0]);
 
     unsigned int shaderCnt = loadShaders();
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
@@ -129,12 +129,44 @@ unsigned int GameState::loadObjectInstances(){
 
 void GameState::writeToXML() {
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
-//    std::cout << "here1" << std::endl;
-//    rapidxml::xml_node<> *modelsNode = rootNode->first_node("Models");
-//    std::cout << "here2" << std::endl;
-//
-//    rapidxml::xml_node<> *modelNode = modelsNode->first_node("Model");
-//    modelNode->first_attribute("name")->value("asdfasdf");
+    rapidxml::xml_node<> *sceneObjectsNode = rootNode->first_node("SceneObjects");
+
+    unsigned int objectidx = 0;
+    for (rapidxml::xml_node<> *sceneObjectNode = sceneObjectsNode->first_node("SceneObject"); sceneObjectNode;
+         sceneObjectNode = sceneObjectNode->next_sibling())
+    {
+        Object currObject = objects[objectidx++];
+        rapidxml::xml_node<> *rotationNode = sceneObjectNode->first_node("Rotation");
+        rapidxml::xml_node<> *positionNode = sceneObjectNode->first_node("Position");
+        rapidxml::xml_node<> *scaleNode = sceneObjectNode->first_node("Scale");
+        char* x = gameScene->allocate_string(std::to_string(currObject.transform.rotation.x).c_str());
+        char* y = gameScene->allocate_string(std::to_string(currObject.transform.rotation.y).c_str());
+        char* z = gameScene->allocate_string(std::to_string(currObject.transform.rotation.z).c_str());
+        rotationNode->first_attribute("x")->value(x);
+        rotationNode->first_attribute("y")->value(y);
+        rotationNode->first_attribute("z")->value(z);
+        x = gameScene->allocate_string(std::to_string(currObject.transform.position.x).c_str());
+        y = gameScene->allocate_string(std::to_string(currObject.transform.position.y).c_str());
+        z = gameScene->allocate_string(std::to_string(currObject.transform.position.z).c_str());
+        positionNode->first_attribute("x")->value(x);
+        positionNode->first_attribute("y")->value(y);
+        positionNode->first_attribute("z")->value(z);
+        x = gameScene->allocate_string(std::to_string(currObject.transform.scale.x).c_str());
+        y = gameScene->allocate_string(std::to_string(currObject.transform.scale.y).c_str());
+        z = gameScene->allocate_string(std::to_string(currObject.transform.scale.z).c_str());
+        scaleNode->first_attribute("x")->value(x);
+        scaleNode->first_attribute("y")->value(y);
+        scaleNode->first_attribute("z")->value(z);
+    }
+
+    std::string(xml_as_string);
+    std::ofstream fileStore("export.xml");
+
+    rapidxml::print(std::back_inserter(xml_as_string), *gameScene);
+    fileStore << xml_as_string;
+    fileStore.close();
+
+//    DEPRECATED WAY OF EXPORTING XML, I NOW JUST MODIFY ALREADY EXISTING ONE
 //    rapidxml::xml_document<> exportDoc;
 //    rapidxml::xml_node<>* decl = exportDoc.allocate_node(rapidxml::node_declaration);
 //    decl->append_attribute(exportDoc.allocate_attribute("version","1.0"));
@@ -153,14 +185,5 @@ void GameState::writeToXML() {
 //    }
 //    root->append_node(modelsNode);
 //    exportDoc.append_node( root );
-//
-//    std::cout << "here3" << std::endl;
-//    std::string(xml_as_string);
-//    std::ofstream fileStore("export.xml");
-//    std::cout << *gameScene << std::endl;
-
-//    rapidxml::print(std::back_inserter(xml_as_string), *gameScene);
-//    fileStore << xml_as_string;
-//    fileStore.close();
 //    gameScene.clear();
 }

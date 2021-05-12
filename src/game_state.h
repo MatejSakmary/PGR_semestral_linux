@@ -9,9 +9,9 @@
 #include "light.h"
 #include "transform.h"
 
-#include "rapidxml/rapidxml.hpp"
+//#include "rapidxml/rapidxml.hpp"
 //#include "rapidxml/rapidxml_print.hpp"
-//#include "rapidxml/rapidxml_ext.h"
+#include "rapidxml/rapidxml_ext.h"
 
 #include "glm/glm.hpp"
 #include "glm/ext.hpp"
@@ -52,6 +52,8 @@ public:
     void writeToXML();
 
 private:
+    // this is needed by rapidxml
+    std::string xmlContent;
     unsigned int loadShaders();
     unsigned int loadModels();
     unsigned int loadObjectInstances();

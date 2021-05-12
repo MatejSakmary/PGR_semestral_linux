@@ -201,7 +201,8 @@ int main() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
 
-    GameState gamestate = GameState("../data/GameScene.xml");
+//    GameState gamestate = GameState("../data/GameScene.xml");
+    GameState gamestate = GameState("export.xml");
     ImguiState imguiState = ImguiState();
     imguiState_ptr = &imguiState;
     gameState_ptr = &gamestate;
