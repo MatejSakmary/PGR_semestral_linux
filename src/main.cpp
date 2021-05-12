@@ -13,6 +13,7 @@
 #include "light.h"
 #include "game_state.h"
 #include "imgui_state.h"
+#include "bezier.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -220,6 +221,10 @@ int main() {
     Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
                                         diffuseFileName.c_str());
 
+    Bezier bezier = Bezier(glm::vec3(-50.0f, 20.0f, 10.0f),
+                                glm::vec3(-50.0f, 20.0f, -10.0f),
+                                glm::vec3(200.0f, 20.0f, 170.0f),
+                                glm::vec3(20.0f, 20.0f, -320.0f));
     /* Skybox texture ------------------------------------- */
     #pragma region Skybox
     float skyboxVertices[] = {
@@ -339,7 +344,7 @@ int main() {
     gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
                                           glm::vec3(0.1, 0.13, 0.135),
                                           glm::vec3(0.05, 0.05, 0.05),
-                                          glm::vec3(0.0, 0.1, 0.0)));
+                                          glm::vec3(-0.1, -0.1, 0.0)));
     for (int i = 0; i < 6; i++) {
         Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
                                            glm::vec3(0.0, 0.0, 1.0),
@@ -349,6 +354,7 @@ int main() {
         gamestate.lights.push_back(pointLight);
     }
     while (!glfwWindowShouldClose(window)) {
+        float t = (float)(glm::sin(glfwGetTime()/3)+1)/2;
         PointLight* point = (PointLight*)gamestate.lights[1];
         point->linear = (sin(glfwGetTime())+1)/10;
 
@@ -383,7 +389,7 @@ int main() {
         CHECK_GL_ERROR();
         glm::mat4 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()), glm::vec3(0.0, 1.0, 0.0));
         cubeMapShader.setMat4fv("rotation", rotationMat);
-        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix())));
+        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix(t))));
         cubeMapShader.setMat4fv("projection", projectionMatrix1);
         cubeMapShader.setFloat("mixVal", (glm::sin((float)glfwGetTime()/5)+1)/2);
         glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
@@ -403,7 +409,7 @@ int main() {
 
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                       io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
-        glm::mat4 cameraMatrix = gameState_ptr->camera->getViewMatrix();
+        glm::mat4 cameraMatrix = gameState_ptr->camera->getViewMatrix(t);
 
         for (Object object : gamestate.objects) {
             object.shader->use();
@@ -422,6 +428,12 @@ int main() {
             }
             object.model->Draw(*object.shader);
         }
+
+//        glm::mat4 curveMat = glm::translate(glm::mat4(1.0f), bezier.getPosition(t));
+//        curveMat = glm::scale(curveMat, glm::vec3(0.005, 0.005, 0.005));
+//        gamestate.objects[4].shader->setMat4fv("Model", curveMat);
+//        gamestate.objects[4].shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * curveMat);
+//        gamestate.objects[4].model->Draw(*gamestate.objects[4].shader);
         #pragma endregion
         /* height map rendering */
         #pragma region heightMap

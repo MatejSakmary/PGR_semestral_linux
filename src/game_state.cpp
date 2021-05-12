@@ -7,11 +7,17 @@ GameState::GameState(std::string xmlPath)
     lightsUsed = 1;
     mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
                                      false, true});
-    fogParams = FogParams({0.165, 0.08});
+    fogParams = FogParams({0.060, 0.08});
+
+    Bezier* bezier = new Bezier(glm::vec3(-50.0f, 20.0f, 10.0f),
+                           glm::vec3(-50.0f, 20.0f, -10.0f),
+                           glm::vec3(200.0f, 20.0f, 170.0f),
+                           glm::vec3(20.0f, 20.0f, -320.0f));
 
     camera = new Camera(glm::vec3(0.0f, 0.0f, 3.0f),
                         glm::vec3(0.0f, 0.0f, -1.0f),
-                        glm::vec3(0.0f, 1.0f, 0.0f));
+                        glm::vec3(0.0f, 1.0f, 0.0f),
+                        bezier);
 
     gameScene = new rapidxml::xml_document<>();
 
@@ -59,6 +65,7 @@ unsigned int GameState::loadShaders()
     }
     return foundShadresCount;
 }
+
 unsigned int GameState::loadModels() {
     unsigned int foundModelsCount = 0;
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
