@@ -116,9 +116,9 @@ vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 came
     if(usedLights >= 2){
 		vec3 lightDirection = normalize(lights[1].position - cameraPosition);
 		float lightIntensity = max( dot( cameraDirection, lightDirection), 0.0);
-        fogColor = mix(vec3(0.5, 0.6, 0.7),
-					   lights[1].diffuse,
-						pow(lightIntensity,60));
+        fogColor = mix(vec3(0.2, 0.25, 0.3),
+					   lights[1].diffuse * vec3(0.2, 0.25, 0.3),
+						pow(lightIntensity,400));
 	}
 	return mix(originalColor, fogColor, fogAmount);
 }
