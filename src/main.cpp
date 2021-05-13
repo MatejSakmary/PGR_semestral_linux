@@ -366,9 +366,11 @@ int main() {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
-        if(gamestate.reload_shaders){
-            std::cout << "reloading shaders" << std::endl;
-            gamestate.reloadShadersAndObjects();
+        if(gamestate.reloadParams.reloadShaders ||
+           gamestate.reloadParams.reloadModels ||
+           gamestate.reloadParams.reloadLights ||
+           gamestate.reloadParams.reloadObjects ){
+            gamestate.reloadHandle();
         }
     }
 

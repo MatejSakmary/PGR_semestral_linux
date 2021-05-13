@@ -15,6 +15,13 @@
 #include "glm/ext.hpp"
 
 typedef struct{
+    bool reloadShaders;
+    bool reloadObjects;
+    bool reloadModels;
+    bool reloadLights;
+}ReloadParams;
+
+typedef struct{
     float density;
     float treshold;
 }FogParams;
@@ -35,12 +42,12 @@ typedef struct{
 
 class GameState{
 public:
-    bool reload_shaders;
     int lightsUsed;
     float deltaTime;
     Camera *camera;
     MouseParameters mouseParameters;
     FogParams fogParams;
+    ReloadParams reloadParams;
     std::vector<Light*> lights;
     std::vector<Object*> objects;
     std::unordered_map<std::string,Shader*> shaders;
@@ -48,10 +55,8 @@ public:
 
     rapidxml::xml_document<>* gameScene;
     explicit GameState(std::string xmlPath);
-    void reloadShadersAndObjects();
-    void reloadObjects();
-    void reloadModels();
-    void reloadLights();
+    void reloadHandle();
+
     // !!! ONLY WRITES SCENEOBJECT TRANSFORMS NOTHING ELSE
     void writeToXML();
 
@@ -63,5 +68,9 @@ private:
     unsigned int loadModels();
     unsigned int loadObjectInstances();
     unsigned int loadLights();
+    void reloadShadersAndObjects();
+    void reloadModelsAndObjects();
+    void reloadObjects();
+    void reloadLights();
 
 };

@@ -9,7 +9,14 @@ void ImguiState::ImguiDraw(GameState &gameState)
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
     if(ImGui::Button("Export XML")){ gameState.writeToXML();}
-    if(ImGui::Button("Reload Shaders")){ gameState.reload_shaders = true;}
+    if(ImGui::Button("Reload Shaders")){ gameState.reloadParams.reloadShaders = true;}
+    ImGui::SameLine();
+    if(ImGui::Button("Reload Objects")){ gameState.reloadParams.reloadObjects = true;}
+    ImGui::SameLine();
+    if(ImGui::Button("Reload Models")){ gameState.reloadParams.reloadModels = true;}
+    ImGui::SameLine();
+    if(ImGui::Button("Reload Lights")){ gameState.reloadParams.reloadLights = true;}
+
     if(ImGui::Button("Camera to Dynamic")){gameState.camera->switchToDynamic();}
     ImGui::Text("use WASD to move around");
     ImGui::Text("use SPACE to fly up CTRL to fly downwards");
@@ -48,7 +55,7 @@ void ImguiState::ImguiDraw(GameState &gameState)
         ImGui::Begin("Object Properties", &showObjectsWindow);
         for(unsigned int i = 0; i < gameState.objects.size(); i++)
         {
-            Object& currObj = gameState.objects[i];
+            Object& currObj = *gameState.objects[i];
             if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
                 ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform.position, -50.0f, 50.0f);
                 ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform.rotation,.0f, 360.0f);

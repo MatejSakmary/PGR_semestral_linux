@@ -4,7 +4,7 @@
 #include "game_state.h"
 GameState::GameState(std::string xmlPath)
 {
-    reload_shaders = false;
+    reloadParams = ReloadParams({false, false, false, false});
     this->xmlPath = xmlPath;
     lightsUsed = 1;
     mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
@@ -255,6 +255,25 @@ void GameState::writeToXML() {
 }
 
 void GameState::reloadShadersAndObjects() {
+    for (auto& shader : shaders){
+        delete shader.second;
+    }
+    shaders.clear();
+    loadShaders();
+    reloadObjects();
+    reloadParams.reloadShaders = false;
+}
+void GameState::reloadObjects() {
+    for(auto & object : objects){
+        delete object;
+    }
+    objects.clear();
+    loadObjectInstances();
+    reloadParams.reloadObjects = false;
+}
+
+void GameState::reloadHandle() {
+
     delete gameScene;
     gameScene = new rapidxml::xml_document<>();
 
@@ -268,20 +287,34 @@ void GameState::reloadShadersAndObjects() {
     /* Parsing xml */
     gameScene->parse<0>(&xmlContent[0]);
 
-    for (auto& shader : shaders){
-        delete shader.second;
+    if(reloadParams.reloadLights){
+        reloadLights();
+    }else if (reloadParams.reloadShaders){
+        reloadShadersAndObjects();
+    }else if (reloadParams.reloadModels){
+        reloadModelsAndObjects();
+    }else if (reloadParams.reloadObjects){
+        reloadObjects();
     }
-    shaders.clear();
-    loadShaders();
+}
+
+void GameState::reloadModelsAndObjects() {
+    for (auto& model : models){
+        delete model.second;
+    }
+    models.clear();
+    loadModels();
     reloadObjects();
-    reload_shaders = false;
+    reloadParams.reloadModels = false;
 }
-void GameState::reloadObjects() {
-    for(unsigned int i = 0; i < objects.size(); i++){
-        delete objects[i];
+
+void GameState::reloadLights() {
+    for(auto & light : lights){
+        delete light;
     }
-    std::cout << "successfully deleted objects" << std::endl;
-    objects.clear();
-    loadObjectInstances();
+    lights.clear();
+    loadLights();
+    reloadParams.reloadLights = false;
 }
+
 

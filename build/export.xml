@@ -4,7 +4,7 @@
 			<Ambient r="0.1" g="0.13" b="0.135"/>
 			<Diffuse r="0.1" g="0.13" b="0.135"/>
 			<Specular r="0.1" g="0.13" b="0.135"/>
-			<Direction x="-0.1" y="-0.1" z="0.0"/>
+			<Direction x="0.1" y="-0.1" z="0.0"/>
 		</Light>
 		<Light type="Point">
 			<Ambient r="0" g="0" b="0"/>
@@ -48,7 +48,7 @@
 	</Shaders>
 	<SceneObjects>
 		<SceneObject modelName="fireplace" shaderName="frag_light">
-			<Rotation x="360.000000" y="180.000000" z="10.588000"/>
+			<Rotation x="360.000000" y="120.000000" z="10.588000"/>
 			<Position x="-38.235001" y="-14.800000" z="-10.294000"/>
 			<Scale x="1.500000" y="1.500000" z="1.500000"/>
 		</SceneObject>
