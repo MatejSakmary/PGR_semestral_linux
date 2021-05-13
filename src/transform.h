@@ -17,7 +17,7 @@ public:
     Transform(Transform const &transform) = default;
     Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) :
               position{position}, rotation{rotation}, scale{scale}{};
-    glm::mat4 getTransformMat();
+    glm::mat4 getTransformMat(bool doScale = true);
 
 };
 

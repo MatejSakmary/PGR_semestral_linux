@@ -42,11 +42,11 @@ GameState::GameState(std::string xmlPath)
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << lighthsCnt << " lights" << std::endl;
-
-    Transform* rootNodeTransform = new Transform(glm::vec3(0.0,0.0,0.0),
-                                                glm::vec3(0.0,0.0,0.0),
-                                                  glm::vec3(1.0,1.0,0.0));
-    Transform* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
+    glm::vec3 position = glm::vec3(0.0,20.0,0.0);
+    glm::vec3 rotation = glm::vec3(0.0,0.0,0.0);
+    glm::vec3 scale    = glm::vec3(1.0,1.0,1.0);
+    auto* rootNodeTransform = new Transform(position, rotation, scale);
+    auto* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
                                                    glm::vec3(0.0,0.0,0.0),
                                                    glm::vec3(1.0,1.0,1.0));
     std::vector<Node*> children;
@@ -54,7 +54,7 @@ GameState::GameState(std::string xmlPath)
 
     std::vector<Node*> children1;
     auto* object = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform);
-    auto* objectNode = new ObjectNode(rootNodeTransform, rootNode, children1, object);
+    auto* objectNode = new ObjectNode(objectNodeTransform, rootNode, children1, object);
     rootNode->addChildren(std::vector<Node*>{objectNode});
 }
 

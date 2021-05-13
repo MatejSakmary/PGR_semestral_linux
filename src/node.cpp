@@ -6,7 +6,6 @@
 
 glm::mat4 Node::getTransform() {
     std::vector<Transform*> transformList;
-    transformList.push_back(this->transform);
     glm::mat4 finalTransform = glm::mat4(1.0f);
 
     Node* movingParent = this->parent;
@@ -16,9 +15,10 @@ glm::mat4 Node::getTransform() {
         movingParent = movingParent->parent;
     }
 
-    for(unsigned int i = transformList.size() - 1; i >= 0; i--){
-        finalTransform *= transformList[i]->getTransformMat();
+    for(int i = transformList.size(); i > 0; i--){
+        finalTransform *= transformList[i-1]->getTransformMat(false);
     }
+    finalTransform*= this->transform->getTransformMat();
     return finalTransform;
 }
 

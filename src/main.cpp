@@ -338,8 +338,21 @@ int main() {
             CHECK_GL_ERROR();
             object->model->Draw(*object->shader);
         }
+        /* experimental scene draw */
+        SceneObject* object = ((ObjectNode*)(gamestate.rootNode->children[0]))->object;
+        object->shader->use();
+        object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * gamestate.rootNode->children[0]->getTransform());
+        object->shader->setMat4fv("Model", gamestate.rootNode->children[0]->getTransform());
+        object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(gamestate.rootNode->children[0]->getTransform())));
+        object->shader->setBool("normalTexUsed", false);
+        object->shader->setFloat("material.shininess", 30.0f);
+        object->shader->setInt("usedLights", gamestate.lightsUsed);
+        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+            gamestate.lights[i]->setLightParam(i, *object->shader);
+        }
+        object->model->Draw(*object->shader);
 
-        #pragma endregion
+#pragma endregion
         /* height map rendering */
         #pragma region heightMap
         glm::mat4 modelMatrix = glm::mat4(1.0f);
