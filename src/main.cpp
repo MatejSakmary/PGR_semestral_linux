@@ -310,7 +310,7 @@ int main() {
         /* fire draw */
         Shader fireLightShader = *gamestate.shaders.find("fire")->second;
         fireLightShader.use();
-        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0]->transform.position + glm::vec3(0.0f, 0.5f, 0.0f));
+        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0]->transform->position + glm::vec3(0.0f, 0.5f, 0.0f));
         fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
         fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
         fireLightShader.setInt("frame", (int)(6 * glfwGetTime())%200);
@@ -323,11 +323,11 @@ int main() {
         fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        for (Object* object : gamestate.objects) {
+        for (SceneObject* object : gamestate.objects) {
             object->shader->use();
-            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform.getTransformMat());
-            object->shader->setMat4fv("Model", object->transform.getTransformMat());
-            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform.getTransformMat())));
+            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
+            object->shader->setMat4fv("Model", object->transform->getTransformMat());
+            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
 
             object->shader->setBool("normalTexUsed", false);
             object->shader->setFloat("material.shininess", 30.0f);

@@ -42,6 +42,20 @@ GameState::GameState(std::string xmlPath)
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << lighthsCnt << " lights" << std::endl;
+
+    Transform* rootNodeTransform = new Transform(glm::vec3(0.0,0.0,0.0),
+                                                glm::vec3(0.0,0.0,0.0),
+                                                  glm::vec3(1.0,1.0,0.0));
+    Transform* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
+                                                   glm::vec3(0.0,0.0,0.0),
+                                                   glm::vec3(1.0,1.0,1.0));
+    std::vector<Node*> children;
+    rootNode = new Node(rootNodeTransform, nullptr,children);
+
+    std::vector<Node*> children1;
+    auto* object = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform);
+    auto* objectNode = new ObjectNode(rootNodeTransform, rootNode, children1, object);
+    rootNode->addChildren(std::vector<Node*>{objectNode});
 }
 
 unsigned int GameState::loadShaders()
@@ -129,8 +143,8 @@ unsigned int GameState::loadObjectInstances(){
             continue;
         }
 
-        Transform transform(position, rotation, scale);
-        auto* object = new Object{model->second, shader->second, transform};
+        auto* transform = new Transform(position, rotation, scale);
+        auto* object = new SceneObject(model->second, shader->second, transform);
         objects.push_back(object);
         foundObjectsCount++;
     }
@@ -201,25 +215,25 @@ void GameState::writeToXML() {
     for (rapidxml::xml_node<> *sceneObjectNode = sceneObjectsNode->first_node("SceneObject"); sceneObjectNode;
          sceneObjectNode = sceneObjectNode->next_sibling())
     {
-        Object currObject = *objects[objectidx++];
+        SceneObject currObject = *objects[objectidx++];
         rapidxml::xml_node<> *rotationNode = sceneObjectNode->first_node("Rotation");
         rapidxml::xml_node<> *positionNode = sceneObjectNode->first_node("Position");
         rapidxml::xml_node<> *scaleNode = sceneObjectNode->first_node("Scale");
-        char* x = gameScene->allocate_string(std::to_string(currObject.transform.rotation.x).c_str());
-        char* y = gameScene->allocate_string(std::to_string(currObject.transform.rotation.y).c_str());
-        char* z = gameScene->allocate_string(std::to_string(currObject.transform.rotation.z).c_str());
+        char* x = gameScene->allocate_string(std::to_string(currObject.transform->rotation.x).c_str());
+        char* y = gameScene->allocate_string(std::to_string(currObject.transform->rotation.y).c_str());
+        char* z = gameScene->allocate_string(std::to_string(currObject.transform->rotation.z).c_str());
         rotationNode->first_attribute("x")->value(x);
         rotationNode->first_attribute("y")->value(y);
         rotationNode->first_attribute("z")->value(z);
-        x = gameScene->allocate_string(std::to_string(currObject.transform.position.x).c_str());
-        y = gameScene->allocate_string(std::to_string(currObject.transform.position.y).c_str());
-        z = gameScene->allocate_string(std::to_string(currObject.transform.position.z).c_str());
+        x = gameScene->allocate_string(std::to_string(currObject.transform->position.x).c_str());
+        y = gameScene->allocate_string(std::to_string(currObject.transform->position.y).c_str());
+        z = gameScene->allocate_string(std::to_string(currObject.transform->position.z).c_str());
         positionNode->first_attribute("x")->value(x);
         positionNode->first_attribute("y")->value(y);
         positionNode->first_attribute("z")->value(z);
-        x = gameScene->allocate_string(std::to_string(currObject.transform.scale.x).c_str());
-        y = gameScene->allocate_string(std::to_string(currObject.transform.scale.y).c_str());
-        z = gameScene->allocate_string(std::to_string(currObject.transform.scale.z).c_str());
+        x = gameScene->allocate_string(std::to_string(currObject.transform->scale.x).c_str());
+        y = gameScene->allocate_string(std::to_string(currObject.transform->scale.y).c_str());
+        z = gameScene->allocate_string(std::to_string(currObject.transform->scale.z).c_str());
         scaleNode->first_attribute("x")->value(x);
         scaleNode->first_attribute("y")->value(y);
         scaleNode->first_attribute("z")->value(z);

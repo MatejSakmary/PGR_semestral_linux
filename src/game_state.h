@@ -4,10 +4,12 @@
 #include <iostream>
 #include <utility>
 
+#include "node.h"
 #include "camera.h"
 #include "model.h"
 #include "light.h"
 #include "transform.h"
+#include "scene_object.h"
 
 #include "rapidxml/rapidxml_ext.h"
 
@@ -26,12 +28,6 @@ typedef struct{
     float treshold;
 }FogParams;
 
-typedef struct {
-    Model* model;
-    Shader* shader;
-    Transform transform;
-}Object;
-
 typedef struct{
     float lastX;
     float lastY;
@@ -49,10 +45,12 @@ public:
     FogParams fogParams;
     ReloadParams reloadParams;
     std::vector<Light*> lights;
-    std::vector<Object*> objects;
+    std::vector<SceneObject*> objects;
     std::unordered_map<std::string,Shader*> shaders;
     std::unordered_map<std::string,Model*> models;
 
+    /* experimental */
+    Node* rootNode;
     rapidxml::xml_document<>* gameScene;
     explicit GameState(std::string xmlPath);
     void reloadHandle();
