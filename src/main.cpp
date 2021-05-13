@@ -13,6 +13,7 @@
 #include "game_state.h"
 #include "imgui_state.h"
 #include "bezier.h"
+#include "cubemap.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -222,120 +223,24 @@ int main() {
                                 glm::vec3(200.0f, 20.0f, 170.0f),
                                 glm::vec3(20.0f, 20.0f, -320.0f));
     /* Skybox texture ------------------------------------- */
-    #pragma region Skybox
-    float skyboxVertices[] = {
-            // positions
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, -1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-
-            -1.0f, -1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f,
-            -1.0f, -1.0f, 1.0f,
-
-            -1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, -1.0f,
-            1.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, 1.0f,
-            -1.0f, 1.0f, -1.0f,
-
-            -1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, -1.0f,
-            1.0f, -1.0f, -1.0f,
-            -1.0f, -1.0f, 1.0f,
-            1.0f, -1.0f, 1.0f
-    };
-    unsigned int nightSkybox;
-    glGenTextures(1, &nightSkybox);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, nightSkybox);
-    std::vector<std::string> cubemapPaths;
-
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_rt.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_lf.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_up.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_dn.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_bk.tga");
-    cubemapPaths.push_back("../data/envmap_grimmnight/grimmnight_ft.tga");
-    int width, height, nrChannels;
-    unsigned char *data;
-    for (unsigned int i = 0; i < cubemapPaths.size(); i++) {
-        data = stbi_load(cubemapPaths[i].c_str(), &width, &height, &nrChannels, 0);
-        if (!data) {
-            std::cout << "MAIN::CUBEMAP::Failed to load texture at path " << cubemapPaths[i] << std::endl;
-            stbi_image_free(data);
-            continue;
-        }
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height,
-                     0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        stbi_image_free(data);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
+    std::vector<std::string> dayCubemapPaths;
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_rt.tga");
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_lf.tga");
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_up.tga");
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_dn.tga");
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_bk.tga");
+    dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_ft.tga");
     /* Second cubemap texture */
-    unsigned int daySkybox;
-    glGenTextures(1, &daySkybox);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, daySkybox);
-    cubemapPaths.clear();
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_rt.tga");
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_lf.tga");
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_up.tga");
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_dn.tga");
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_bk.tga");
-    cubemapPaths.push_back("../data/envmap_miramar/miramar_ft.tga");
-    for (unsigned int i = 0; i < cubemapPaths.size(); i++) {
-        data = stbi_load(cubemapPaths[i].c_str(), &width, &height, &nrChannels, 0);
-        if (!data) {
-            std::cout << "MAIN::CUBEMAP::Failed to load texture at path " << cubemapPaths[i] << std::endl;
-            stbi_image_free(data);
-            continue;
-        }
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height,
-                     0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        stbi_image_free(data);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    }
+    std::vector<std::string> nightCubemapPaths;
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_rt.tga");
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_lf.tga");
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_up.tga");
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_dn.tga");
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_bk.tga");
+    nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_ft.tga");
+    Cubemap cubemap = Cubemap(nightCubemapPaths, dayCubemapPaths, 150);
     CHECK_GL_ERROR();
     /* Geometry construction */
-    unsigned int VAO, VBO;
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    #pragma endregion
 
     gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
                                           glm::vec3(0.1, 0.13, 0.135),
@@ -368,55 +273,37 @@ int main() {
         glViewport(0, 0, display_w, display_h);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* skybox rendering ---------------------------------*/
-        glm::mat4 projectionMatrix1 = glm::perspective(glm::radians(45.0f),
+        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                        io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
-        #pragma region skybox
-        /* bind textures */
-        glDepthMask(GL_FALSE);
-        cubeMapShader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, nightSkybox);
-        cubeMapShader.setInt("nightCubemap", 0);
-        CHECK_GL_ERROR();
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, daySkybox);
-        cubeMapShader.setInt("dayCubemap", 1);
-        glActiveTexture(GL_TEXTURE0);
-        CHECK_GL_ERROR();
-        /* draw Skybox */
-        glm::mat4 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()), glm::vec3(0.0, 1.0, 0.0));
-        cubeMapShader.setMat4fv("rotation", rotationMat);
-        cubeMapShader.setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix(t))));
-        cubeMapShader.setMat4fv("projection", projectionMatrix1);
-        cubeMapShader.setFloat("mixVal", (glm::sin((float)glfwGetTime()/5)+1)/2);
-        glm::mat4 modelMatrix1 = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
-        modelMatrix1 = glm::scale(modelMatrix1, glm::vec3(scaleCube, scaleCube, scaleCube));
-        cubeMapShader.setMat4fv("model", modelMatrix1);
-        cubeMapShader.setVec3("cameraPosition", gameState_ptr->camera->getPos());
-        cubeMapShader.setFloat("a", gamestate.fogParams.density);
-        cubeMapShader.setFloat("b", gamestate.fogParams.treshold);
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthMask(GL_TRUE);
 
+        CHECK_GL_ERROR();
+        /* set common shader variables for each shader */
+        for(const auto& shader : gamestate.shaders){
+            shader.second->use();
+            shader.second->setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix(t))));
+            shader.second->setMat4fv("projection", projectionMatrix);
+            shader.second->setVec3("cameraPosition", gameState_ptr->camera->getPos());
+            shader.second->setFloat("a",gamestate.fogParams.density);
+            shader.second->setFloat("b",gamestate.fogParams.treshold);
+            CHECK_GL_ERROR();
+        }
+        /* skybox rendering ---------------------------------*/
+        #pragma region skybox
+        glDepthMask(GL_FALSE);
+        cubemap.Draw(cubeMapShader, (float)glfwGetTime());
+        glDepthMask(GL_TRUE);
         #pragma endregion
         /* objects rendering */
         #pragma region objects
         fragLightShader.use();
 
-        glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
-                                                      io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
-        glm::mat4 cameraMatrix = gameState_ptr->camera->getViewMatrix(t);
-
+        glm::mat4 cameraMatrix = gamestate.camera->getViewMatrix(t);
         for (Object object : gamestate.objects) {
             object.shader->use();
             object.shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object.transform.getTransformMat());
             object.shader->setMat4fv("Model", object.transform.getTransformMat());
             object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
 
-            object.shader->setFloat("a",gamestate.fogParams.density);
-            object.shader->setFloat("b",gamestate.fogParams.treshold);
             object.shader->setBool("normalTexUsed", false);
             object.shader->setVec3("cameraPosition", gameState_ptr->camera->getPos());
             object.shader->setFloat("material.shininess", 30.0f);
@@ -424,14 +311,10 @@ int main() {
             for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
                 gamestate.lights[i]->setLightParam(i, *object.shader);
             }
+            CHECK_GL_ERROR();
             object.model->Draw(*object.shader);
         }
 
-//        glm::mat4 curveMat = glm::translate(glm::mat4(1.0f), bezier.getPosition(t));
-//        curveMat = glm::scale(curveMat, glm::vec3(0.005, 0.005, 0.005));
-//        gamestate.objects[4].shader->setMat4fv("Model", curveMat);
-//        gamestate.objects[4].shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * curveMat);
-//        gamestate.objects[4].model->Draw(*gamestate.objects[4].shader);
         #pragma endregion
         /* height map rendering */
         #pragma region heightMap
