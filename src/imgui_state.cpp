@@ -9,6 +9,7 @@ void ImguiState::ImguiDraw(GameState &gameState)
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
     if(ImGui::Button("Export XML")){ gameState.writeToXML();}
+    if(ImGui::Button("Reload Shaders")){ gameState.reload_shaders = true;}
     if(ImGui::Button("Camera to Dynamic")){gameState.camera->switchToDynamic();}
     ImGui::Text("use WASD to move around");
     ImGui::Text("use SPACE to fly up CTRL to fly downwards");

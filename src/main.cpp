@@ -205,10 +205,6 @@ int main() {
     imguiState_ptr = &imguiState;
     gameState_ptr = &gamestate;
 
-    Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
-    Shader heightMapShader = *gamestate.shaders.find("height")->second;
-    Shader fragLightShader = *gamestate.shaders.find("frag_light")->second;
-    Shader fireLightShader = *gamestate.shaders.find("fire")->second;
 
     float half_scale = scale / 2.0f;
 
@@ -266,20 +262,7 @@ int main() {
     glEnableVertexAttribArray(1);
     CHECK_GL_ERROR();
     unsigned int fireTexture = loadTexture("../data/fire/flame_sprite_sheet3.png");
-//    unsigned int fireTexture = loadTexture("../data/envmap_miramar/miramar_ft.tga");
 
-//    gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
-//                                          glm::vec3(0.1, 0.13, 0.135),
-//                                          glm::vec3(0.05, 0.05, 0.05),
-//                                          glm::vec3(-0.1, -0.1, 0.0)));
-//    for (int i = 0; i < 6; i++) {
-//        Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
-//                                           glm::vec3(0.0, 0.0, 1.0),
-//                                           glm::vec3(0.024, 0.024, 1.0),
-//                                           glm::vec3(18.8, -5.6, -18.4),
-//                                           0.2f, 0.09f, 0.012f);
-//        gamestate.lights.push_back(pointLight);
-//    }
     while (!glfwWindowShouldClose(window)) {
         float t = (float)(glm::sin(glfwGetTime()/3)+1)/2;
         PointLight* point = (PointLight*)gamestate.lights[1];
@@ -318,15 +301,16 @@ int main() {
         /* skybox rendering ---------------------------------*/
         #pragma region skybox
         glDepthMask(GL_FALSE);
-        cubemap.Draw(cubeMapShader, (float)glfwGetTime());
+        cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime());
         glDepthMask(GL_TRUE);
         #pragma endregion
         /* objects rendering */
         #pragma region objects
 
         /* fire draw */
+        Shader fireLightShader = *gamestate.shaders.find("fire")->second;
         fireLightShader.use();
-        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0].transform.position + glm::vec3(0.0f, 0.5f, 0.0f));
+        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0]->transform.position + glm::vec3(0.0f, 0.5f, 0.0f));
         fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
         fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
         fireLightShader.setInt("frame", (int)(6 * glfwGetTime())%200);
@@ -339,26 +323,27 @@ int main() {
         fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        for (Object object : gamestate.objects) {
-            object.shader->use();
-            object.shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object.transform.getTransformMat());
-            object.shader->setMat4fv("Model", object.transform.getTransformMat());
-            object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
+        for (Object* object : gamestate.objects) {
+            object->shader->use();
+            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform.getTransformMat());
+            object->shader->setMat4fv("Model", object->transform.getTransformMat());
+            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform.getTransformMat())));
 
-            object.shader->setBool("normalTexUsed", false);
-            object.shader->setFloat("material.shininess", 30.0f);
-            object.shader->setInt("usedLights", gamestate.lightsUsed);
+            object->shader->setBool("normalTexUsed", false);
+            object->shader->setFloat("material.shininess", 30.0f);
+            object->shader->setInt("usedLights", gamestate.lightsUsed);
             for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-                gamestate.lights[i]->setLightParam(i, *object.shader);
+                gamestate.lights[i]->setLightParam(i, *object->shader);
             }
             CHECK_GL_ERROR();
-            object.model->Draw(*object.shader);
+            object->model->Draw(*object->shader);
         }
 
         #pragma endregion
         /* height map rendering */
         #pragma region heightMap
         glm::mat4 modelMatrix = glm::mat4(1.0f);
+        Shader heightMapShader = *gamestate.shaders.find("height")->second;
         heightMapShader.use();
         heightMapShader.setFloat("material.shininess", 0.5f);
         heightMapShader.setInt("usedLights", gamestate.lightsUsed);
@@ -381,6 +366,10 @@ int main() {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
+        if(gamestate.reload_shaders){
+            std::cout << "reloading shaders" << std::endl;
+            gamestate.reloadShadersAndObjects();
+        }
     }
 
     ImGui_ImplOpenGL3_Shutdown();

@@ -93,7 +93,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
     /* load material only if model has a material specified */
     if(mesh->mMaterialIndex >= 0)
     {
-
         /* load material */
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
         std::vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -173,32 +172,3 @@ unsigned int Model::TextureFromFile(const char* path, const std::string& directo
 Model::Model(std::vector<Mesh> meshes) {
     this->meshes = meshes;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

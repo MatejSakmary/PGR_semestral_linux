@@ -8,7 +8,7 @@ uniform sampler2D fireTex;
 
 void main(){
     vec4 color = texture(fireTex, vec2(texCoords.x, 1-texCoords.y));
-    if(color.a < 0.2){
+    if(color.a < 0.3){
         discard;
     }
     FragColor = color;

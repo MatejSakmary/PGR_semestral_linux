@@ -4,6 +4,8 @@
 #include "game_state.h"
 GameState::GameState(std::string xmlPath)
 {
+    reload_shaders = false;
+    this->xmlPath = xmlPath;
     lightsUsed = 1;
     mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
                                      false, true});
@@ -129,7 +131,7 @@ unsigned int GameState::loadObjectInstances(){
 
         Transform transform(position, rotation, scale);
         auto* object = new Object{model->second, shader->second, transform};
-        objects.push_back(*object);
+        objects.push_back(object);
         foundObjectsCount++;
     }
     return foundObjectsCount;
@@ -199,7 +201,7 @@ void GameState::writeToXML() {
     for (rapidxml::xml_node<> *sceneObjectNode = sceneObjectsNode->first_node("SceneObject"); sceneObjectNode;
          sceneObjectNode = sceneObjectNode->next_sibling())
     {
-        Object currObject = objects[objectidx++];
+        Object currObject = *objects[objectidx++];
         rapidxml::xml_node<> *rotationNode = sceneObjectNode->first_node("Rotation");
         rapidxml::xml_node<> *positionNode = sceneObjectNode->first_node("Position");
         rapidxml::xml_node<> *scaleNode = sceneObjectNode->first_node("Scale");
@@ -250,5 +252,36 @@ void GameState::writeToXML() {
 //    root->append_node(modelsNode);
 //    exportDoc.append_node( root );
 //    gameScene.clear();
+}
+
+void GameState::reloadShadersAndObjects() {
+    delete gameScene;
+    gameScene = new rapidxml::xml_document<>();
+
+    /* read xml doc for parsing */
+    std::ifstream file(xmlPath);
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
+    xmlContent = buffer.str();
+
+    /* Parsing xml */
+    gameScene->parse<0>(&xmlContent[0]);
+
+    for (auto& shader : shaders){
+        delete shader.second;
+    }
+    shaders.clear();
+    loadShaders();
+    reloadObjects();
+    reload_shaders = false;
+}
+void GameState::reloadObjects() {
+    for(unsigned int i = 0; i < objects.size(); i++){
+        delete objects[i];
+    }
+    std::cout << "successfully deleted objects" << std::endl;
+    objects.clear();
+    loadObjectInstances();
 }
 
