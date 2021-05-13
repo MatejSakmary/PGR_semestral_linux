@@ -208,6 +208,7 @@ int main() {
     Shader cubeMapShader = *gamestate.shaders.find("cubemap")->second;
     Shader heightMapShader = *gamestate.shaders.find("height")->second;
     Shader fragLightShader = *gamestate.shaders.find("frag_light")->second;
+    Shader fireLightShader = *gamestate.shaders.find("fire")->second;
 
     float half_scale = scale / 2.0f;
 
@@ -242,6 +243,31 @@ int main() {
     CHECK_GL_ERROR();
     /* Geometry construction */
 
+    /*fireplace*/
+    float basic_textured_square_vertices[] = {
+            //x    y      z     u     v
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+    };
+    unsigned int VBO, VAO;
+    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(basic_textured_square_vertices),
+                 &basic_textured_square_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    CHECK_GL_ERROR();
+    unsigned int fireTexture = loadTexture("../data/fire/flame_sprite_sheet3.png");
+//    unsigned int fireTexture = loadTexture("../data/envmap_miramar/miramar_ft.tga");
+
     gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
                                           glm::vec3(0.1, 0.13, 0.135),
                                           glm::vec3(0.05, 0.05, 0.05),
@@ -273,11 +299,13 @@ int main() {
         glViewport(0, 0, display_w, display_h);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        glm::mat4 cameraMatrix = gamestate.camera->getViewMatrix(t);
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                        io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
 
         CHECK_GL_ERROR();
-        /* set common shader variables for each shader */
+        /* set common shader variables for each shader probably should be uniform buffer
+         * but I don't have time */
         for(const auto& shader : gamestate.shaders){
             shader.second->use();
             shader.second->setMat4fv("view", glm::mat4(glm::mat3(gameState_ptr->camera->getViewMatrix(t))));
@@ -295,9 +323,19 @@ int main() {
         #pragma endregion
         /* objects rendering */
         #pragma region objects
-        fragLightShader.use();
 
-        glm::mat4 cameraMatrix = gamestate.camera->getViewMatrix(t);
+        /* fire draw */
+        fireLightShader.use();
+        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0].transform.position + glm::vec3(0.0f, 0.5f, 0.0f));
+        fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
+        fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
+        fireLightShader.setInt("frame", (int)(6 * glfwGetTime())%200);
+        glBindVertexArray(VAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, fireTexture);
+        fireLightShader.setInt("fireTex", 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
         for (Object object : gamestate.objects) {
             object.shader->use();
             object.shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object.transform.getTransformMat());
@@ -305,7 +343,6 @@ int main() {
             object.shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object.transform.getTransformMat())));
 
             object.shader->setBool("normalTexUsed", false);
-            object.shader->setVec3("cameraPosition", gameState_ptr->camera->getPos());
             object.shader->setFloat("material.shininess", 30.0f);
             object.shader->setInt("usedLights", gamestate.lightsUsed);
             for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
@@ -316,13 +353,11 @@ int main() {
         }
 
         #pragma endregion
+
         /* height map rendering */
         #pragma region heightMap
         glm::mat4 modelMatrix = glm::mat4(1.0f);
         heightMapShader.use();
-        heightMapShader.setFloat("a", gamestate.fogParams.density);
-        heightMapShader.setFloat("b", gamestate.fogParams.treshold);
-        heightMapShader.setVec3("cameraPosition", gameState_ptr->camera->getPos());
         heightMapShader.setFloat("material.shininess", 0.5f);
         heightMapShader.setInt("usedLights", gamestate.lightsUsed);
         glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
@@ -330,10 +365,10 @@ int main() {
         for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
             gamestate.lights[i]->setLightParam(i, heightMapShader);
         }
-
         modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(300.0f, 300.0f, 300.0f));
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
+
         heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
         heightMapShader.setMat4fv("Model", modelMatrix);
         heightMapShader.setBool("normalTexUsed", true);

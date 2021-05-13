@@ -1,0 +1,66 @@
+# Blender MTL File: 'None'
+# Material Count: 5
+
+newmtl ash
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd Fireplace_ashes_07 - Default_BaseColor.png
+map_Bump Fireplace_ashes_07 - Default_Normal.png
+
+newmtl rock
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd Fireplace_rock_01 - rock_BaseColor.png
+map_d Fireplace_rock_01 - rock_BaseColor.png
+map_Bump Fireplace_rock_01 - Default_Normal.png
+
+newmtl wood
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd wood\\02 - Default_albedo.jpg
+map_Bump wood\\02 - Default_normal.png
+map_Ks wood\\02 - Default_roughness.jpg
+
+newmtl wood_half
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd wood\\02 - Default_albedo.jpg
+map_Bump wood\\02 - Default_normal.png
+map_Ks wood\\02 - Default_roughness.jpg
+
+newmtl wood_quad
+Ns 18.000005
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 1
+map_Kd wood_quad\\wood_albedo.jpg
+map_Bump wood_quad\\wood_normal.png
+map_Ks wood_quad\\wood_roughness.jpg

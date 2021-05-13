@@ -9,13 +9,20 @@
 		<Model name="rock1" path="../data/rocks/rocks_model/rock_01_a.fbx"/>
 		<Model name="rock2" path="../data/rocks/rocks_model/rock_01_b.fbx"/>
 		<Model name="rock3" path="../data/rocks/rocks_model/rock_01_c.fbx"/>
+		<Model name="fireplace" path="../data/fire/fireplace_model/fireplace.obj"/>
 	</Models>
 	<Shaders>
 		<Shader name="frag_light" vert_path="../shaders/fragment_light.vert" frag_path="../shaders/fragment_light.frag"/>
 		<Shader name="height" vert_path="../shaders/height.vert" frag_path="../shaders/fragment_light.frag"/>
 		<Shader name="cubemap" vert_path="../shaders/cubemap.vert" frag_path="../shaders/cubemap.frag"/>
+		<Shader name="fire" vert_path="../shaders/fire.vert" frag_path="../shaders/fire.frag"/>
 	</Shaders>
 	<SceneObjects>
+		<SceneObject modelName="fireplace" shaderName="frag_light">
+			<Rotation x="338.824005" y="211.764999" z="0.000000"/>
+			<Position x="0.000000" y="-24.299999" z="-10.294000"/>
+			<Scale x="1.500000" y="1.500000" z="1.500000"/>
+		</SceneObject>
 		<SceneObject modelName="rock1" shaderName="frag_light">
 			<Rotation x="21.176001" y="0.000000" z="0.000000"/>
 			<Position x="0.000000" y="-20.587999" z="-33.824001"/>
