@@ -1,4 +1,33 @@
 <Root>
+	<Lights>
+		<Light type="Directional">
+			<Ambient r="0.1" g="0.13" b="0.135"/>
+			<Diffuse r="0.1" g="0.13" b="0.135"/>
+			<Specular r="0.1" g="0.13" b="0.135"/>
+			<Direction x="-0.1" y="-0.1" z="0.0"/>
+		</Light>
+		<Light type="Point">
+			<Ambient r="0" g="0" b="0"/>
+			<Diffuse r="0.0" g="0.0" b="0.8"/>
+			<Specular r="0.0" g="0.0" b="0.8"/>
+			<Position x="18.8" y="-5.6" z="-18.4"/>
+			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
+		</Light>
+		<Light type="Point">
+			<Ambient r="0" g="0" b="0"/>
+			<Diffuse r="1.0" g="0.482" b="0.02"/>
+			<Specular r="0.23" g="0.17" b="0.04"/>
+			<Position x="-38.73" y="-13.2" z="-11.0"/>
+			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
+		</Light>
+		<Light type="Point">
+			<Ambient r="0" g="0" b="0"/>
+			<Diffuse r="0.0" g="0.0" b="0.8"/>
+			<Specular r="0.0" g="0.0" b="0.8"/>
+			<Position x="18.8" y="-5.6" z="-18.4"/>
+			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
+		</Light>
+	</Lights>
 	<Models>
 		<Model name="palm" path="../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx"/>
 		<Model name="portal" path="../data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx"/>
@@ -19,8 +48,8 @@
 	</Shaders>
 	<SceneObjects>
 		<SceneObject modelName="fireplace" shaderName="frag_light">
-			<Rotation x="338.824005" y="211.764999" z="0.000000"/>
-			<Position x="0.000000" y="-24.299999" z="-10.294000"/>
+			<Rotation x="360.000000" y="180.000000" z="10.588000"/>
+			<Position x="-38.235001" y="-14.800000" z="-10.294000"/>
 			<Scale x="1.500000" y="1.500000" z="1.500000"/>
 		</SceneObject>
 		<SceneObject modelName="rock1" shaderName="frag_light">

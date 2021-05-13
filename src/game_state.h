@@ -48,7 +48,8 @@ public:
     std::unordered_map<std::string,Model*> models;
 
     rapidxml::xml_document<>* gameScene;
-    GameState(std::string xmlPath);
+    explicit GameState(std::string xmlPath);
+    // !!! ONLY WRITES SCENEOBJECT TRANSFORMS NOTHING ELSE
     void writeToXML();
 
 private:
@@ -57,5 +58,6 @@ private:
     unsigned int loadShaders();
     unsigned int loadModels();
     unsigned int loadObjectInstances();
+    unsigned int loadLights();
 
 };

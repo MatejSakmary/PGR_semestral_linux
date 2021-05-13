@@ -32,13 +32,14 @@ GameState::GameState(std::string xmlPath)
     gameScene->parse<0>(&xmlContent[0]);
 
     unsigned int shaderCnt = loadShaders();
-    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
-
     unsigned int modelsCnt = loadModels();
-    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
-
     unsigned int objectsCnt = loadObjectInstances();
+    unsigned int lighthsCnt = loadLights();
+
+    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
+    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
+    std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << lighthsCnt << " lights" << std::endl;
 }
 
 unsigned int GameState::loadShaders()
@@ -134,6 +135,62 @@ unsigned int GameState::loadObjectInstances(){
     return foundObjectsCount;
 }
 
+unsigned int GameState::loadLights() {
+    unsigned int foundObjectsCount = 0;
+    rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
+    rapidxml::xml_node<> *lightsArrNode = rootNode->first_node("Lights");
+
+    for (rapidxml::xml_node<> *lightNode = lightsArrNode->first_node("Light"); lightNode;
+         lightNode = lightNode->next_sibling()) {
+
+        if (foundObjectsCount == 8){
+            std::cerr << "GAMESCENE::LOAD_LIGHTS::ERROR::Already loaded maximum number of supported lights not loading more"
+                      << std::endl;
+        }
+
+        std::string lightType = lightNode->first_attribute("type")->value();
+        LightType type;
+        if (lightType == "Point"){type = POINT_LIGHT;}
+        else if (lightType == "Directional"){type = DIRECTIONAL_LIGHT;}
+        else if (lightType == "Spotlight"){type = SPOT_LIGHT;}
+        else{
+            std::cerr << "GAMESCENE::LOAD_LIGTHTS::ERROR::Unable to parse light type" << std::endl;
+            continue;
+        }
+        rapidxml::xml_node<> *ambientNode = lightNode->first_node("Ambient");
+        rapidxml::xml_node<> *diffuseNode = lightNode->first_node("Diffuse");
+        rapidxml::xml_node<> *specularNode = lightNode->first_node("Specular");
+        glm::vec3 ambient = glm::vec3(std::stof(ambientNode->first_attribute("r")->value()),
+                                      std::stof(ambientNode->first_attribute("g")->value()),
+                                      std::stof(ambientNode->first_attribute("b")->value()));
+        glm::vec3 diffuse = glm::vec3(std::stof(diffuseNode->first_attribute("r")->value()),
+                                      std::stof(diffuseNode->first_attribute("g")->value()),
+                                      std::stof(diffuseNode->first_attribute("b")->value()));
+        glm::vec3 specular = glm::vec3(std::stof(specularNode->first_attribute("r")->value()),
+                                      std::stof(specularNode->first_attribute("g")->value()),
+                                      std::stof(specularNode->first_attribute("b")->value()));
+        if(type == POINT_LIGHT){
+            rapidxml::xml_node<> *positionNode = lightNode->first_node("Position");
+            rapidxml::xml_node<> *paramNode = lightNode->first_node("Params");
+            glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                           std::stof(positionNode->first_attribute("y")->value()),
+                                           std::stof(positionNode->first_attribute("z")->value()));
+            float constant = std::stof(paramNode->first_attribute("constant")->value());
+            float linear = std::stof(paramNode->first_attribute("linear")->value());
+            float quadratic = std::stof(paramNode->first_attribute("quadratic")->value());
+            lights.push_back(new PointLight(ambient, diffuse, specular, position, constant, linear, quadratic));
+        }else if (type == DIRECTIONAL_LIGHT){
+            rapidxml::xml_node<> *directionNode = lightNode->first_node("Direction");
+            glm::vec3 direction = glm::vec3(std::stof(directionNode->first_attribute("x")->value()),
+                                            std::stof(directionNode->first_attribute("y")->value()),
+                                            std::stof(directionNode->first_attribute("z")->value()));
+            lights.push_back(new DirectionalLight(ambient, diffuse, specular, direction));
+        }
+        foundObjectsCount++;
+    }
+    return foundObjectsCount;
+}
+
 void GameState::writeToXML() {
     rapidxml::xml_node<> *rootNode = gameScene->first_node("Root");
     rapidxml::xml_node<> *sceneObjectsNode = rootNode->first_node("SceneObjects");
@@ -194,3 +251,4 @@ void GameState::writeToXML() {
 //    exportDoc.append_node( root );
 //    gameScene.clear();
 }
+

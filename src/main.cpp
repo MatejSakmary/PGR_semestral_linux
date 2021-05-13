@@ -268,18 +268,18 @@ int main() {
     unsigned int fireTexture = loadTexture("../data/fire/flame_sprite_sheet3.png");
 //    unsigned int fireTexture = loadTexture("../data/envmap_miramar/miramar_ft.tga");
 
-    gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
-                                          glm::vec3(0.1, 0.13, 0.135),
-                                          glm::vec3(0.05, 0.05, 0.05),
-                                          glm::vec3(-0.1, -0.1, 0.0)));
-    for (int i = 0; i < 6; i++) {
-        Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
-                                           glm::vec3(0.0, 0.0, 1.0),
-                                           glm::vec3(0.024, 0.024, 1.0),
-                                           glm::vec3(18.8, -5.6, -18.4),
-                                           0.2f, 0.09f, 0.012f);
-        gamestate.lights.push_back(pointLight);
-    }
+//    gamestate.lights.push_back(new DirectionalLight(glm::vec3(0.1, 0.11, 0.12),
+//                                          glm::vec3(0.1, 0.13, 0.135),
+//                                          glm::vec3(0.05, 0.05, 0.05),
+//                                          glm::vec3(-0.1, -0.1, 0.0)));
+//    for (int i = 0; i < 6; i++) {
+//        Light *pointLight = new PointLight(glm::vec3(0, 0, 0),
+//                                           glm::vec3(0.0, 0.0, 1.0),
+//                                           glm::vec3(0.024, 0.024, 1.0),
+//                                           glm::vec3(18.8, -5.6, -18.4),
+//                                           0.2f, 0.09f, 0.012f);
+//        gamestate.lights.push_back(pointLight);
+//    }
     while (!glfwWindowShouldClose(window)) {
         float t = (float)(glm::sin(glfwGetTime()/3)+1)/2;
         PointLight* point = (PointLight*)gamestate.lights[1];
@@ -335,6 +335,9 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, fireTexture);
         fireLightShader.setInt("fireTex", 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        fireTransformMat = glm::rotate(fireTransformMat,glm::radians(90.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+        fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         for (Object object : gamestate.objects) {
             object.shader->use();
@@ -353,7 +356,6 @@ int main() {
         }
 
         #pragma endregion
-
         /* height map rendering */
         #pragma region heightMap
         glm::mat4 modelMatrix = glm::mat4(1.0f);

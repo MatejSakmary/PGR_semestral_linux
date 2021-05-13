@@ -59,10 +59,10 @@ void ImguiState::ImguiDraw(GameState &gameState)
     /* lights prop */
     if (showLightsWindow) {
         ImGui::Begin("Lights Properties", &showLightsWindow);
-        ImGui::SliderInt("Used Lights", &gameState.lightsUsed, 1, 7);
+        ImGui::SliderInt("Used Lights", &gameState.lightsUsed, 1, gameState.lights.size());
         std::vector<Light*>& lights = gameState.lights;
 
-        for(unsigned int i = 0; i <= 7; i++){
+        for(unsigned int i = 0; i < gameState.lightsUsed; i++){
             if(ImGui::CollapsingHeader(("Light " + std::to_string(i)).c_str())){
                 ImVec4 Ambient = ImVec4(lights[i]->ambient.x,lights[i]->ambient.y,lights[i]->ambient.z,1.0);
                 ImVec4 Diffuse = ImVec4(lights[i]->diffuse.x,lights[i]->diffuse.y,lights[i]->diffuse.z,1.0);
