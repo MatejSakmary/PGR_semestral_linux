@@ -103,28 +103,31 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         /* get node params */
         NodeType type = (NodeType)std::stoi(childNode->first_attribute("type")->value());
         std::string nodeName = childNode->first_attribute("name")->value();
+        Transform* transform;
 
-        /* get transform node NODE->TRANSFORM */
-        rapidxml::xml_node<> *transformNode = childNode->first_node("Transform");
-        /* get individual transforms from transform not NODE->TRANSFORM->ROTATION
-         *                                                             ->POSITION
-         *                                                             ->SCALE    */
-        rapidxml::xml_node<> *rotationNode = transformNode->first_node("Rotation");
-        rapidxml::xml_node<> *positionNode = transformNode->first_node("Position");
-        rapidxml::xml_node<> *scaleNode = transformNode->first_node("Scale");
+        if(type != LINEAR_ANIMATION) {
+            /* get transform node NODE->TRANSFORM */
+            rapidxml::xml_node<> *transformNode = childNode->first_node("Transform");
+            /* get individual transforms from transform not NODE->TRANSFORM->ROTATION
+             *                                                             ->POSITION
+             *                                                             ->SCALE    */
+            rapidxml::xml_node<> *rotationNode = transformNode->first_node("Rotation");
+            rapidxml::xml_node<> *positionNode = transformNode->first_node("Position");
+            rapidxml::xml_node<> *scaleNode = transformNode->first_node("Scale");
 
-        /* get individual attributes from those nodes */
-        glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
-                                       std::stof(positionNode->first_attribute("y")->value()),
-                                       std::stof(positionNode->first_attribute("z")->value()));
-        glm::vec3 rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
-                                       std::stof(rotationNode->first_attribute("y")->value()),
-                                       std::stof(rotationNode->first_attribute("z")->value()));
-        glm::vec3 scale    = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
-                                       std::stof(scaleNode->first_attribute("y")->value()),
-                                       std::stof(scaleNode->first_attribute("z")->value()));
-        /* create new transform object */
-        auto* transform = new Transform(position, rotation, scale);
+            /* get individual attributes from those nodes */
+            glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                           std::stof(positionNode->first_attribute("y")->value()),
+                                           std::stof(positionNode->first_attribute("z")->value()));
+            glm::vec3 rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
+                                           std::stof(rotationNode->first_attribute("y")->value()),
+                                           std::stof(rotationNode->first_attribute("z")->value()));
+            glm::vec3 scale = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
+                                        std::stof(scaleNode->first_attribute("y")->value()),
+                                        std::stof(scaleNode->first_attribute("z")->value()));
+            /* create new transform object */
+            transform = new Transform(position, rotation, scale);
+        }
         /*PURE TRANSFORM node processing ---------------------------------------------------------------------------- */
         if(type == PURE_TRANSFORM){
             childGraphNode = new Node(transform, parentNode, std::vector<Node*>{},nodeName);
@@ -158,6 +161,11 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
             std::cerr << "GAMESTATE::PROCESS_CHILDREN::Not implemented yet";
             continue;
         }
+        /*LINEAR ANIMATION processing --------------------------------------------------------------------------------*/
+        else if (type == LINEAR_ANIMATION){
+            childGraphNode = processAnimationNode(childNode, parentNode, nodeName);
+            std::cout << "GAMESTATE::PROCESS_CHILDREN::Created node " << nodeName << " of type " << type << std::endl;
+        }
         /*HANDLE ERRORS --------------------------------------------------------------------------------------------- */
         else {
             std::cerr << "GAMESTATE::PROCESS_CHILDREN::Node " << nodeName << " has unknown type " << type << std::endl;
@@ -169,6 +177,44 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         finalChildren.push_back(childGraphNode);
     }
     return finalChildren;
+}
+
+Node* GameState::processAnimationNode(rapidxml::xml_node<>* animationNode, Node* parent, std::string name){
+    Node* returnNode;
+    /* get start and end nodes NODE->START NODE->END */
+    rapidxml::xml_node<>* startNode = animationNode->first_node("Start");
+    rapidxml::xml_node<>* endNode = animationNode->first_node("End");
+
+    rapidxml::xml_node<> *rotationNode = startNode->first_node("Rotation");
+    rapidxml::xml_node<> *positionNode = startNode->first_node("Position");
+    rapidxml::xml_node<> *scaleNode = startNode->first_node("Scale");
+
+    glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                   std::stof(positionNode->first_attribute("y")->value()),
+                                   std::stof(positionNode->first_attribute("z")->value()));
+    glm::vec3 rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
+                                   std::stof(rotationNode->first_attribute("y")->value()),
+                                   std::stof(rotationNode->first_attribute("z")->value()));
+    glm::vec3 scale    = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
+                                   std::stof(scaleNode->first_attribute("y")->value()),
+                                   std::stof(scaleNode->first_attribute("z")->value()));
+    auto* startTransform = new Transform(position, rotation, scale);
+
+    rotationNode = endNode->first_node("Rotation");
+    positionNode = endNode->first_node("Position");
+    scaleNode = endNode->first_node("Scale");
+    position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                   std::stof(positionNode->first_attribute("y")->value()),
+                                   std::stof(positionNode->first_attribute("z")->value()));
+    rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
+                                   std::stof(rotationNode->first_attribute("y")->value()),
+                                   std::stof(rotationNode->first_attribute("z")->value()));
+    scale    = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
+                                   std::stof(scaleNode->first_attribute("y")->value()),
+                                   std::stof(scaleNode->first_attribute("z")->value()));
+    auto* endTransform = new Transform(position, rotation, scale);
+    returnNode = new AnimationLinearNode(startTransform, endTransform, parent, std::vector<Node*>{}, name);
+    return  returnNode;
 }
 
 unsigned int GameState::loadSceneGraph(){

@@ -238,24 +238,23 @@ int main() {
         #pragma endregion
         /* objects rendering */
         #pragma region objects
-
         /* fire draw */
 
-        for (SceneObject* object : gamestate.objects) {
-            object->shader->use();
-            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
-            object->shader->setMat4fv("Model", object->transform->getTransformMat());
-            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
-
-            object->shader->setBool("normalTexUsed", false);
-            object->shader->setFloat("material.shininess", 30.0f);
-            object->shader->setInt("usedLights", gamestate.lightsUsed);
-            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-                gamestate.lights[i]->setLightParam(i, *object->shader);
-            }
-            CHECK_GL_ERROR();
-            object->model->Draw(*object->shader);
-        }
+//        for (SceneObject* object : gamestate.objects) {
+//            object->shader->use();
+//            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
+//            object->shader->setMat4fv("Model", object->transform->getTransformMat());
+//            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
+//
+//            object->shader->setBool("normalTexUsed", false);
+//            object->shader->setFloat("material.shininess", 30.0f);
+//            object->shader->setInt("usedLights", gamestate.lightsUsed);
+//            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+//                gamestate.lights[i]->setLightParam(i, *object->shader);
+//            }
+//            CHECK_GL_ERROR();
+//            object->model->Draw(*object->shader);
+//        }
         /* experimental scene draw */
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);
@@ -267,9 +266,9 @@ int main() {
             if(currNode->type == OBJECT){
                 SceneObject* object = ((ObjectNode*)currNode)->object;
                 object->shader->use();
-                object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * currNode->getTransform());
-                object->shader->setMat4fv("Model", currNode->getTransform());
-                object->shader->setMat4fv("NormalModel", glm::transpose(currNode->getTransform()));
+                object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * currNode->getTransform(t));
+                object->shader->setMat4fv("Model", currNode->getTransform(t));
+                object->shader->setMat4fv("NormalModel", glm::transpose(currNode->getTransform(t)));
                 object->shader->setBool("normalTexUsed", false);
                 object->shader->setFloat("material.shininess", 30.0f);
                 object->shader->setInt("usedLights", gamestate.lightsUsed);
@@ -292,28 +291,6 @@ int main() {
             }
         }
 
-        #pragma endregion
-        /* height map rendering */
-        #pragma region heightMap
-//        glm::mat4 modelMatrix = glm::mat4(1.0f);
-//        Shader heightMapShader = *gamestate.shaders.find("height")->second;
-//        heightMapShader.use();
-//        heightMapShader.setFloat("material.shininess", 0.5f);
-//        heightMapShader.setInt("usedLights", gamestate.lightsUsed);
-//        glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
-//        glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
-//        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-//            gamestate.lights[i]->setLightParam(i, heightMapShader);
-//        }
-//        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-//        modelMatrix = glm::scale(modelMatrix, glm::vec3(300.0f, 300.0f, 300.0f));
-//        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
-//
-//        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-//        heightMapShader.setMat4fv("Model", modelMatrix);
-//        heightMapShader.setBool("normalTexUsed", true);
-//        terrain.Draw(heightMapShader);
-//        CHECK_GL_ERROR();
         #pragma endregion
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

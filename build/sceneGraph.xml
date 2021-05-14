@@ -135,40 +135,68 @@
 				<Scale x="300" y="300" z="300"/>
 			</Transform>
 			<Children>
-				<Node name="fireplaceOrigin" type="1">
-					<Transform>
+				<Node name="linear animation" type="3">
+					<Start>
 						<Rotation x="0" y="0" z="0"/>
 						<Position x="150" y="0" z="150"/>
-						<Scale x="0" y="0" z="0"/>
-					</Transform>
-					<Children>
-						<Node name="palm1" type="2">
-							<SceneObject model="palm" shader="frag_light"/>
-							<Transform>
-								<Rotation x="270" y="0" z="0"/>
-								<Position x="0" y="0" z="-5"/>
-								<Scale x="0.02" y="0.02" z="0.02"/>
-							</Transform>
-							<Children></Children>
-						</Node>
-						<Node name="palm2" type="2">
-							<SceneObject model="palm" shader="frag_light"/>
-							<Transform>
-								<Rotation x="270" y="0" z="0"/>
-								<Position x="3" y="0" z="3"/>
-								<Scale x="0.02" y="0.02" z="0.02"/>
-							</Transform>
-							<Children></Children>
-						</Node>
-						<!--   Note-> to properly render fireplace (with fire) the name of the node must contain "fire" -->
-						<Node name="fireplace" type="2">
-							<SceneObject model="fireplace" shader="frag_light"/>
+						<Scale x="1" y="1" z="1"/>
+					</Start>
+					<End>
+						<Rotation x="0" y="270" z="0"/>
+						<Position x="150" y="10" z="150"/>
+						<Scale x="1" y="1" z="1"/>
+					</End>
+                    <Children>
+						<Node name="fireplaceOrigin" type="1">
 							<Transform>
 								<Rotation x="0" y="0" z="0"/>
 								<Position x="0" y="0" z="0"/>
-								<Scale x="1.5" y="1.5" z="1.5"/>
+								<Scale x="0" y="0" z="0"/>
 							</Transform>
-							<Children></Children>
+							<Children>
+								<Node name="linear animation2" type="3">
+									<Start>
+										<Rotation x="0" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="1" y="1" z="1"/>
+									</Start>
+									<End>
+										<Rotation x="190" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="0.2" y="0.2" z="0.2"/>
+									</End>
+									<Children>
+										<!--   Note-> to properly render fireplace (with fire) the name of the node must contain "fire" -->
+										<Node name="fireplace" type="2">
+											<SceneObject model="fireplace" shader="frag_light"/>
+											<Transform>
+												<Rotation x="0" y="0" z="0"/>
+												<Position x="0" y="0" z="0"/>
+												<Scale x="1.5" y="1.5" z="1.5"/>
+											</Transform>
+											<Children></Children>
+										</Node>
+										<Node name="palm1" type="2">
+											<SceneObject model="palm" shader="frag_light"/>
+											<Transform>
+												<Rotation x="270" y="0" z="0"/>
+												<Position x="0" y="0" z="-5"/>
+												<Scale x="0.02" y="0.02" z="0.02"/>
+											</Transform>
+											<Children></Children>
+										</Node>
+									</Children>
+								</Node>
+								<Node name="palm2" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="270" y="0" z="0"/>
+										<Position x="3" y="0" z="3"/>
+										<Scale x="0.02" y="0.02" z="0.02"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
 						</Node>
 					</Children>
 				</Node>

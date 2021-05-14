@@ -93,4 +93,5 @@ private:
     void reloadObjects();
     void reloadLights();
     void prepareFireModel();
+    Node* processAnimationNode(rapidxml::xml_node<>* animationNode, Node* parent, std::string name);
 };
