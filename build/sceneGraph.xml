@@ -28,6 +28,13 @@
 			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
 		</Light>
 	</Lights>
+	<!--	Note -> only the first terrain object will be read and imported -->
+	<!--	To specify transform of terrain model use root node transform -->
+	<Terrain heightMapPath="../data/terrain_floor/displaced_floor/heightmap.tga"
+	         normalMapPath="../data/terrain_floor/displaced_floor/normalmap.PNG"
+			 diffuseMapPath="../data/terrain_floor/displaced_floor/colormap.png"
+			 resolution ="300"
+			 scale="0.17"/>
 	<Models>
 		<Model name="palm" path="../data/palm_1/palm_model/kkviz phoenix sylvestris_01.fbx"/>
 		<Model name="portal" path="../data/ancient_portal/ancient_portal_model/Ancient_portal_adjusted_1.fbx"/>
@@ -42,6 +49,7 @@
 	</Models>
 	<Shaders>
 		<Shader name="frag_light" vert_path="../shaders/fragment_light.vert" frag_path="../shaders/fragment_light.frag"/>
+		<!--	Note-> this shader has to be named height and will be use for terrain drawing-->
 		<Shader name="height" vert_path="../shaders/height.vert" frag_path="../shaders/fragment_light.frag"/>
 		<Shader name="cubemap" vert_path="../shaders/cubemap.vert" frag_path="../shaders/cubemap.frag"/>
 		<Shader name="fire" vert_path="../shaders/fire.vert" frag_path="../shaders/fire.frag"/>
@@ -123,14 +131,14 @@
 		<Node name="root" type="1">
             <Transform>
 				<Rotation x="0" y="0" z="0"/>
-				<Position x="0" y="20" z="0"/>
-				<Scale x="0" y="0" z="0"/>
+				<Position x="-150" y="0" z="-150"/>
+				<Scale x="300" y="300" z="300"/>
 			</Transform>
 			<Children>
 				<Node name="fireplaceOrigin" type="1">
 					<Transform>
 						<Rotation x="0" y="0" z="0"/>
-						<Position x="0" y="0" z="0"/>
+						<Position x="150" y="0" z="150"/>
 						<Scale x="0" y="0" z="0"/>
 					</Transform>
 					<Children>

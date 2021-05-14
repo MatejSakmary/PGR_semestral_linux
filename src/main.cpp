@@ -116,55 +116,6 @@ void processInput(GLFWwindow *window) {
 
 Model prepareTerrainModel(unsigned int terrainResolution, const char *heightTexPath,
                           const char *normalTexPath, const char *diffuseTexPath) {
-    std::vector<Vertex> vertices;
-    std::vector<Texture> textures;
-    std::vector<unsigned int> indices;
-
-    for (unsigned int i = 0; i < terrainResolution; i++) {
-        for (unsigned int j = 0; j < terrainResolution; j++) {
-            Vertex vertex;
-            glm::vec3 position = glm::vec3((float(i) / (terrainResolution - 1)),
-                                           (0),
-                                           (float(j) / (terrainResolution - 1)));
-            /* Height map loads normal from texture, thus there is no need to specify normal coords */
-            glm::vec3 normal = glm::vec3(0.0, 0.0, 0.0);
-            /* Texture coords are the same as position, since the generated plane is always unit len*/
-            glm::vec2 textureCoords = glm::vec2(position.x, position.z);
-            vertex.Position = position;
-            vertex.Normal = normal;
-            vertex.TexCoords = textureCoords;
-            vertices.push_back(vertex);
-        }
-    }
-
-    for (unsigned int i = 0; i < terrainResolution - 1; i++) {
-        for (unsigned int j = 0; j < terrainResolution - 1; j++) {
-            int i0 = j + i * terrainResolution;
-            int i1 = i0 + 1;
-            int i2 = i0 + terrainResolution;
-            int i3 = i2 + 1;
-            indices.push_back(i0);
-            indices.push_back(i2);
-            indices.push_back(i1);
-            indices.push_back(i1);
-            indices.push_back(i2);
-            indices.push_back(i3);
-        }
-    }
-    auto heightTexID = loadTexture(heightTexPath);
-    auto normalTexID = loadTexture(normalTexPath);
-    auto diffuseTexID = loadTexture(diffuseTexPath);
-    Texture heightTex{heightTexID, "texture_height", heightTexPath};
-    Texture normalTex{normalTexID, "texture_normal", normalTexPath};
-    Texture diffuseTex{diffuseTexID, "texture_diffuse", diffuseTexPath};
-    textures.push_back(heightTex);
-    textures.push_back(normalTex);
-    textures.push_back(diffuseTex);
-    std::vector<Mesh> meshes;
-    Mesh mesh(vertices, indices, textures);
-    meshes.push_back(mesh);
-    Model model(meshes);
-    return model;
 }
 
 int main() {
@@ -209,12 +160,12 @@ int main() {
 
     float half_scale = scale / 2.0f;
 
-    std::string heightFileName = "../data/terrain_floor/displaced_floor/heightmap.tga";
-    std::string normalFileName = "../data/terrain_floor/displaced_floor/normalmap.PNG";
-    std::string diffuseFileName = "../data/terrain_floor/displaced_floor/colormap.png";
-
-    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
-                                        diffuseFileName.c_str());
+//    std::string heightFileName = "";
+//    std::string normalFileName = "";
+//    std::string diffuseFileName = "";
+//
+//    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
+//                                        diffuseFileName.c_str());
 
     Bezier bezier = Bezier(glm::vec3(-50.0f, 20.0f, 10.0f),
                                 glm::vec3(-50.0f, 20.0f, -10.0f),
@@ -359,7 +310,13 @@ int main() {
                 for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
                     gamestate.lights[i]->setLightParam(i, *object->shader);
                 }
+                if(currNode->name == "root"){
+                    object->shader->setBool("normalTexUsed", true);
+                    object->shader->setFloat("scale", gamestate.terrainParams.scale);
+                }
+                CHECK_GL_ERROR();
                 object->model->Draw(*object->shader);
+                CHECK_GL_ERROR();
             }
             for(auto child : currNode->children){
                 nodes.push(child);
@@ -369,25 +326,25 @@ int main() {
         #pragma endregion
         /* height map rendering */
         #pragma region heightMap
-        glm::mat4 modelMatrix = glm::mat4(1.0f);
-        Shader heightMapShader = *gamestate.shaders.find("height")->second;
-        heightMapShader.use();
-        heightMapShader.setFloat("material.shininess", 0.5f);
-        heightMapShader.setInt("usedLights", gamestate.lightsUsed);
-        glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
-        glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
-        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-            gamestate.lights[i]->setLightParam(i, heightMapShader);
-        }
-        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-        modelMatrix = glm::scale(modelMatrix, glm::vec3(300.0f, 300.0f, 300.0f));
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
-
-        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
-        heightMapShader.setMat4fv("Model", modelMatrix);
-        heightMapShader.setBool("normalTexUsed", true);
-        terrain.Draw(heightMapShader);
-        CHECK_GL_ERROR();
+//        glm::mat4 modelMatrix = glm::mat4(1.0f);
+//        Shader heightMapShader = *gamestate.shaders.find("height")->second;
+//        heightMapShader.use();
+//        heightMapShader.setFloat("material.shininess", 0.5f);
+//        heightMapShader.setInt("usedLights", gamestate.lightsUsed);
+//        glUniform1f(glGetUniformLocation(heightMapShader.ID, "scale"), scale);
+//        glUniform1f(glGetUniformLocation(heightMapShader.ID, "half_scale"), half_scale);
+//        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+//            gamestate.lights[i]->setLightParam(i, heightMapShader);
+//        }
+//        modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+//        modelMatrix = glm::scale(modelMatrix, glm::vec3(300.0f, 300.0f, 300.0f));
+//        modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f, 0.0f, -0.5f));
+//
+//        heightMapShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * modelMatrix);
+//        heightMapShader.setMat4fv("Model", modelMatrix);
+//        heightMapShader.setBool("normalTexUsed", true);
+//        terrain.Draw(heightMapShader);
+//        CHECK_GL_ERROR();
         #pragma endregion
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

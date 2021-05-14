@@ -18,7 +18,6 @@ uniform Material material;
 uniform mat4 PVMmatrix;
 uniform mat4 Model;
 uniform float scale;
-uniform float half_scale;
 
 out vec3 fragPosition;
 out vec3 mycol;
@@ -26,7 +25,7 @@ out vec2 texCoords;
 
 void main() 
 {
-    float height = texture(material.texture_height1, aPosition.xz).r*scale - half_scale;
+    float height = texture(material.texture_height1, aPosition.xz).r*scale - (scale/2);
 
     fragPosition = vec3(Model * vec4(aPosition.x, height, aPosition.z,1.0f));
     mycol = vec3(height, height, height);

@@ -36,6 +36,14 @@ typedef struct{
     bool firstMouseInput;
 }MouseParameters;
 
+typedef struct{
+   float scale;
+   unsigned int resolution;
+   std::string heightTexPath;
+   std::string normalTexPath;
+   std::string diffuseTexPath;
+}TerrainParams;
+
 class GameState{
 public:
     int lightsUsed;
@@ -44,6 +52,7 @@ public:
     MouseParameters mouseParameters;
     FogParams fogParams;
     ReloadParams reloadParams;
+    TerrainParams terrainParams;
     std::vector<Light*> lights;
     std::vector<SceneObject*> objects;
     std::unordered_map<std::string,Shader*> shaders;
@@ -67,10 +76,11 @@ private:
     unsigned int loadObjectInstances();
     unsigned int loadLights();
     unsigned int loadSceneGraph();
+    void loadHeightMapParams();
     std::vector<Node*> processChildren(Node* parentNode, rapidxml::xml_node<> *childrenNode);
+    SceneObject* prepareTerrainModel();
     void reloadShadersAndObjects();
     void reloadModelsAndObjects();
     void reloadObjects();
     void reloadLights();
-
 };

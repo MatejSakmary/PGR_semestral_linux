@@ -35,37 +35,14 @@ GameState::GameState(std::string xmlPath)
     unsigned int shaderCnt = loadShaders();
     unsigned int modelsCnt = loadModels();
     unsigned int objectsCnt = loadObjectInstances();
-    loadSceneGraph();
-
     unsigned int lighthsCnt = loadLights();
+
+    loadSceneGraph();
 
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << lighthsCnt << " lights" << std::endl;
-
-//    auto* rootNodeTransform = new Transform(glm::vec3(5.0, 0.0, -10.0),
-//                                            glm::vec3(0,0,0),
-//                                            glm::vec3(1,1,1));
-//
-//    auto* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
-//                                                   glm::vec3(0.0,0.0,0.0),
-//                                                   glm::vec3(1.0,1.0,1.0));
-//    auto* objectNodeTransform2 = new Transform(glm::vec3(0.0,-5.0,0.0),
-//                                              glm::vec3(180.0,0.0,0.0),
-//                                              glm::vec3(1.0,1.0,1.0));
-//    std::vector<Node*> children;
-//    rootNode = new Node(rootNodeTransform, nullptr,children);
-//
-//    std::vector<Node*> children1;
-//    auto* object = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform);
-//    auto* objectNode = new ObjectNode(objectNodeTransform, rootNode, children1, object);
-//    rootNode->addChildren(std::vector<Node*>{objectNode});
-//
-//    std::vector<Node*> children2;
-//    auto* object2 = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform2);
-//    auto* objectNode2 = new ObjectNode(objectNodeTransform2, objectNode, children2, object2);
-//    objectNode->addChildren(std::vector<Node*>{objectNode2});
 }
 
 unsigned int GameState::loadShaders()
@@ -218,7 +195,7 @@ unsigned int GameState::loadSceneGraph(){
                                    std::stof(scaleNode->first_attribute("y")->value()),
                                    std::stof(scaleNode->first_attribute("z")->value()));
     auto* transform = new Transform(position, rotation, scale);
-    this->rootNode = new Node(transform, nullptr, std::vector<Node*>{},nodeName);
+    this->rootNode = new ObjectNode(transform, nullptr, std::vector<Node*>{}, prepareTerrainModel(),nodeName);
     rapidxml::xml_node<> *childrenNode = sceneGraphRootNode->first_node("Children");
     this->rootNode->addChildren(processChildren(rootNode, childrenNode));
     return 0;
@@ -395,6 +372,7 @@ void GameState::reloadShadersAndObjects() {
     reloadObjects();
     reloadParams.reloadShaders = false;
 }
+
 void GameState::reloadObjects() {
     for(auto & object : objects){
         delete object;
@@ -447,6 +425,77 @@ void GameState::reloadLights() {
     lights.clear();
     loadLights();
     reloadParams.reloadLights = false;
+}
+
+SceneObject* GameState::prepareTerrainModel() {
+    loadHeightMapParams();
+    std::vector<Vertex> vertices;
+    std::vector<Texture> textures;
+    std::vector<unsigned int> indices;
+
+    for (unsigned int i = 0; i < terrainParams.resolution; i++) {
+        for (unsigned int j = 0; j < terrainParams.resolution; j++) {
+            Vertex vertex;
+            glm::vec3 position = glm::vec3((float(i) / (terrainParams.resolution - 1)),
+                                           (0),
+                                           (float(j) / (terrainParams.resolution - 1)));
+            /* Height map loads normal from texture, thus there is no need to specify normal coords */
+            glm::vec3 normal = glm::vec3(0.0, 0.0, 0.0);
+            /* Texture coords are the same as position, since the generated plane is always unit len*/
+            glm::vec2 textureCoords = glm::vec2(position.x, position.z);
+            vertex.Position = position;
+            vertex.Normal = normal;
+            vertex.TexCoords = textureCoords;
+            vertices.push_back(vertex);
+        }
+    }
+
+    for (unsigned int i = 0; i < terrainParams.resolution - 1; i++) {
+        for (unsigned int j = 0; j < terrainParams.resolution - 1; j++) {
+            int i0 = j + i * terrainParams.resolution;
+            int i1 = i0 + 1;
+            int i2 = i0 + terrainParams.resolution;
+            int i3 = i2 + 1;
+            indices.push_back(i0);
+            indices.push_back(i2);
+            indices.push_back(i1);
+            indices.push_back(i1);
+            indices.push_back(i2);
+            indices.push_back(i3);
+        }
+    }
+    auto heightTexID = loadTexture(terrainParams.heightTexPath.c_str());
+    auto normalTexID = loadTexture(terrainParams.normalTexPath.c_str());
+    auto diffuseTexID = loadTexture(terrainParams.diffuseTexPath.c_str());
+    Texture heightTex{heightTexID, "texture_height", terrainParams.heightTexPath};
+    Texture normalTex{normalTexID, "texture_normal", terrainParams.normalTexPath};
+    Texture diffuseTex{diffuseTexID, "texture_diffuse", terrainParams.diffuseTexPath};
+    textures.push_back(heightTex);
+    textures.push_back(normalTex);
+    textures.push_back(diffuseTex);
+    std::vector<Mesh> meshes;
+    Mesh mesh(vertices, indices, textures);
+    meshes.push_back(mesh);
+    Model* model = new Model(meshes);
+    auto shader = shaders.find("height");
+    if(shader == shaders.end()){
+        std::cerr << "GAMESTATE::PREPARE_TERRAIN_MODEL::Height shader not found, please insert the shader (did you call " <<
+                     "prepare height map before prepare shaders?)" << std::endl;
+        return nullptr;
+    }
+
+    SceneObject* sceneObject = new SceneObject(model, shader->second, nullptr);
+    return sceneObject;
+}
+
+void GameState::loadHeightMapParams() {
+    rapidxml::xml_node<> *xmlRootNode = gameScene->first_node("Root");
+    rapidxml::xml_node<> *terrainNode = xmlRootNode->first_node("Terrain");
+    terrainParams.scale=std::stof(terrainNode->first_attribute("scale")->value());
+    terrainParams.resolution = std::stof(terrainNode->first_attribute("resolution")->value());
+    terrainParams.heightTexPath = terrainNode->first_attribute("heightMapPath")->value();
+    terrainParams.diffuseTexPath = terrainNode->first_attribute("diffuseMapPath")->value();
+    terrainParams.normalTexPath = terrainNode->first_attribute("normalMapPath")->value();
 }
 
 
