@@ -160,6 +160,7 @@
 							</Transform>
 							<Children></Children>
 						</Node>
+						<!--   Note-> to properly render fireplace (with fire) the name of the node must contain "fire" -->
 						<Node name="fireplace" type="2">
 							<SceneObject model="fireplace" shader="frag_light"/>
 							<Transform>

@@ -16,7 +16,6 @@ void ImguiState::ImguiDraw(GameState &gameState)
     if(ImGui::Button("Reload Models")){ gameState.reloadParams.reloadModels = true;}
     ImGui::SameLine();
     if(ImGui::Button("Reload Lights")){ gameState.reloadParams.reloadLights = true;}
-    ImGui::InputFloat("rootNodeRotX", &gameState.rootNode->transform->rotation.x, 1, 10);
 
     if(ImGui::Button("Camera to Dynamic")){gameState.camera->switchToDynamic();}
     ImGui::Text("use WASD to move around");

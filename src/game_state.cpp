@@ -38,6 +38,7 @@ GameState::GameState(std::string xmlPath)
     unsigned int lighthsCnt = loadLights();
 
     loadSceneGraph();
+    prepareFireModel();
 
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
@@ -496,6 +497,49 @@ void GameState::loadHeightMapParams() {
     terrainParams.heightTexPath = terrainNode->first_attribute("heightMapPath")->value();
     terrainParams.diffuseTexPath = terrainNode->first_attribute("diffuseMapPath")->value();
     terrainParams.normalTexPath = terrainNode->first_attribute("normalMapPath")->value();
+}
+
+void GameState::prepareFireModel() {
+    float basic_textured_square_vertices[] = {
+            //x    y      z     u     v
+            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+    };
+    glGenBuffers(1, &fire.VBO);
+    glGenVertexArrays(1, &fire.VAO);
+    glBindVertexArray(fire.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, fire.VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(basic_textured_square_vertices),
+                 &basic_textured_square_vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    fire.fireTexture = loadTexture("../data/fire/flame_sprite_sheet3.png");
+    CHECK_GL_ERROR();
+}
+
+void GameState::drawFire(glm::vec3* transform, glm::mat4* projectionMatrix, glm::mat4* cameraMatrix, float time) {
+
+    Shader fireLightShader = *shaders.find("fire")->second;
+    fireLightShader.use();
+    glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f),*transform);
+    fireTransformMat = glm::translate(fireTransformMat,glm::vec3(0.0f, 0.5f, 0.0f));
+    fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
+    fireLightShader.setMat4fv("PVMmatrix", (*projectionMatrix) * (*cameraMatrix) * fireTransformMat);
+    fireLightShader.setInt("frame", (int)(12 * time)%200);
+    glBindVertexArray(fire.VAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fire.fireTexture);
+    fireLightShader.setInt("fireTex", 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    fireTransformMat = glm::rotate(fireTransformMat,glm::radians(90.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+    fireLightShader.setMat4fv("PVMmatrix", (*projectionMatrix) * (*cameraMatrix) * fireTransformMat);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 

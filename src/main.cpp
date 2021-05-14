@@ -15,6 +15,7 @@
 #include "imgui_state.h"
 #include "bezier.h"
 #include "cubemap.h"
+#include "quaternion.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -114,10 +115,6 @@ void processInput(GLFWwindow *window) {
     }
 }
 
-Model prepareTerrainModel(unsigned int terrainResolution, const char *heightTexPath,
-                          const char *normalTexPath, const char *diffuseTexPath) {
-}
-
 int main() {
     const char *glsl_version = "#version 130";
 
@@ -152,20 +149,42 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    std::cout << glm::radians(20.0f) << std::endl;
+    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+    Quaternion* quat = new Quaternion(0, 0, 50);
+    Quaternion* quat2 = new Quaternion(0, 90, 0);
+    Quaternion quat3 =  (*quat * *quat2 );
+    quat3.Normalize();
+    glm::mat4 rotMat = quat3.getRotMatrix();
+    glm::mat4 rotMatCorr = glm::rotate(glm::mat4(1.0f), glm::radians(50.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    rotMatCorr = glm::rotate(rotMatCorr, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    std::cout << "rot Mat quat :" << glm::to_string(rotMat) << std::endl;
+    std::cout << "rot Mat corr :" << glm::to_string(rotMatCorr) << std::endl;
+
+    glm::vec3 vec = glm::vec3(0.0, 0.0, 1.0);
+    glm::vec3 result = glm::mat3(rotMat) * vec;
+    glm::vec3 result1 = glm::mat3(rotMatCorr) * vec;
+    std::cout << "Rotated vec quat " << result.x << " " << result.y << " " << result.z << std::endl;
+    std::cout << "Correct rotated vec " << result1.x << " " << result1.y << " " << result1.z << std::endl;
+
+    Quaternion* interpolatedQuat = new Quaternion;
+    Quaternion::Slerp(*interpolatedQuat, *quat, *quat2, 0.5f);
+
+//    glm::vec3 vec = glm::vec3(1.0, 0.0, 0.0);
+    glm::vec3 euler = interpolatedQuat->getEulerAngles();
+
+    Transform transform(glm::vec3(0.0, 0.0, 0.0),
+                        glm::vec3(270, 0.0, 0.0),
+                        glm::vec3(1.0f, 1.0f,1.0f));
+    std::cout << "euler angles are " << glm::to_string(glm::degrees(euler)) << std::endl;
+//    glm::vec3 result = interpolatedQuat->Rotate(vec);
+    std::cout << "Rotated vec " << result.x << " " << result.y << " " << result.z << std::endl;
+
     GameState gamestate = GameState("sceneGraph.xml");
     ImguiState imguiState = ImguiState();
     imguiState_ptr = &imguiState;
     gameState_ptr = &gamestate;
-
-
-    float half_scale = scale / 2.0f;
-
-//    std::string heightFileName = "";
-//    std::string normalFileName = "";
-//    std::string diffuseFileName = "";
-//
-//    Model terrain = prepareTerrainModel(300, heightFileName.c_str(), normalFileName.c_str(),
-//                                        diffuseFileName.c_str());
 
     Bezier bezier = Bezier(glm::vec3(-50.0f, 20.0f, 10.0f),
                                 glm::vec3(-50.0f, 20.0f, -10.0f),
@@ -189,31 +208,7 @@ int main() {
     nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_ft.tga");
     Cubemap cubemap = Cubemap(nightCubemapPaths, dayCubemapPaths, 150);
     CHECK_GL_ERROR();
-    /* Geometry construction */
 
-    /*fireplace*/
-    float basic_textured_square_vertices[] = {
-            //x    y      z     u     v
-            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 0.0f, 1.0f, 0.0f
-    };
-    unsigned int VBO, VAO;
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(basic_textured_square_vertices),
-                 &basic_textured_square_vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof (float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
-    CHECK_GL_ERROR();
-    unsigned int fireTexture = loadTexture("../data/fire/flame_sprite_sheet3.png");
 
     while (!glfwWindowShouldClose(window)) {
         float t = (float)(glm::sin(glfwGetTime()/3)+1)/2;
@@ -258,38 +253,24 @@ int main() {
         #pragma endregion
         /* objects rendering */
         #pragma region objects
-
-        /* fire draw */
-        Shader fireLightShader = *gamestate.shaders.find("fire")->second;
-        fireLightShader.use();
-        glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f), gamestate.objects[0]->transform->position + glm::vec3(0.0f, 0.5f, 0.0f));
-        fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
-        fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
-        fireLightShader.setInt("frame", (int)(6 * glfwGetTime())%200);
-        glBindVertexArray(VAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, fireTexture);
-        fireLightShader.setInt("fireTex", 0);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        fireTransformMat = glm::rotate(fireTransformMat,glm::radians(90.0f),glm::vec3(0.0f, 1.0f, 0.0f));
-        fireLightShader.setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * fireTransformMat);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        for (SceneObject* object : gamestate.objects) {
-            object->shader->use();
-            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
-            object->shader->setMat4fv("Model", object->transform->getTransformMat());
-            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
-
-            object->shader->setBool("normalTexUsed", false);
-            object->shader->setFloat("material.shininess", 30.0f);
-            object->shader->setInt("usedLights", gamestate.lightsUsed);
-            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-                gamestate.lights[i]->setLightParam(i, *object->shader);
-            }
-            CHECK_GL_ERROR();
-            object->model->Draw(*object->shader);
-        }
+//
+//        /* fire draw */
+//
+//        for (SceneObject* object : gamestate.objects) {
+//            object->shader->use();
+//            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
+//            object->shader->setMat4fv("Model", object->transform->getTransformMat());
+//            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
+//
+//            object->shader->setBool("normalTexUsed", false);
+//            object->shader->setFloat("material.shininess", 30.0f);
+//            object->shader->setInt("usedLights", gamestate.lightsUsed);
+//            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+//                gamestate.lights[i]->setLightParam(i, *object->shader);
+//            }
+//            CHECK_GL_ERROR();
+//            object->model->Draw(*object->shader);
+//        }
         /* experimental scene draw */
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);
@@ -309,6 +290,9 @@ int main() {
                 object->shader->setInt("usedLights", gamestate.lightsUsed);
                 for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
                     gamestate.lights[i]->setLightParam(i, *object->shader);
+                }
+                if(currNode->name.find("fire") != std::string::npos){
+                    gamestate.drawFire(&currNode->transform->position, &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
                 }
                 if(currNode->name == "root"){
                     object->shader->setBool("normalTexUsed", true);

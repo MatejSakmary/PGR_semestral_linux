@@ -29,6 +29,12 @@ typedef struct{
 }FogParams;
 
 typedef struct{
+    unsigned int VAO;
+    unsigned int VBO;
+    unsigned int fireTexture;
+}Fire;
+
+typedef struct{
     float lastX;
     float lastY;
     float pressDelay;
@@ -63,6 +69,7 @@ public:
     rapidxml::xml_document<>* gameScene;
     explicit GameState(std::string xmlPath);
     void reloadHandle();
+    void drawFire(glm::vec3* transform,glm::mat4* projectionMatrix, glm::mat4* cameraMatrix,  float time);
 
     // !!! ONLY WRITES SCENEOBJECT TRANSFORMS NOTHING ELSE
     void writeToXML();
@@ -71,6 +78,8 @@ private:
     // this is needed by rapidxml
     std::string xmlPath;
     std::string xmlContent;
+
+    Fire fire;
     unsigned int loadShaders();
     unsigned int loadModels();
     unsigned int loadObjectInstances();
@@ -83,4 +92,5 @@ private:
     void reloadModelsAndObjects();
     void reloadObjects();
     void reloadLights();
+    void prepareFireModel();
 };
