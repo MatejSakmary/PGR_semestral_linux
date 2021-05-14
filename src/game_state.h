@@ -66,6 +66,8 @@ private:
     unsigned int loadModels();
     unsigned int loadObjectInstances();
     unsigned int loadLights();
+    unsigned int loadSceneGraph();
+    std::vector<Node*> processChildren(Node* parentNode, rapidxml::xml_node<> *childrenNode);
     void reloadShadersAndObjects();
     void reloadModelsAndObjects();
     void reloadObjects();

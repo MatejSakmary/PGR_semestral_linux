@@ -32,30 +32,40 @@ GameState::GameState(std::string xmlPath)
 
     /* Parising xml */
     gameScene->parse<0>(&xmlContent[0]);
-
     unsigned int shaderCnt = loadShaders();
     unsigned int modelsCnt = loadModels();
     unsigned int objectsCnt = loadObjectInstances();
+    loadSceneGraph();
+
     unsigned int lighthsCnt = loadLights();
 
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << lighthsCnt << " lights" << std::endl;
-    glm::vec3 position = glm::vec3(0.0,20.0,0.0);
-    glm::vec3 rotation = glm::vec3(0.0,0.0,0.0);
-    glm::vec3 scale    = glm::vec3(1.0,1.0,1.0);
-    auto* rootNodeTransform = new Transform(position, rotation, scale);
-    auto* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
-                                                   glm::vec3(0.0,0.0,0.0),
-                                                   glm::vec3(1.0,1.0,1.0));
-    std::vector<Node*> children;
-    rootNode = new Node(rootNodeTransform, nullptr,children);
 
-    std::vector<Node*> children1;
-    auto* object = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform);
-    auto* objectNode = new ObjectNode(objectNodeTransform, rootNode, children1, object);
-    rootNode->addChildren(std::vector<Node*>{objectNode});
+//    auto* rootNodeTransform = new Transform(glm::vec3(5.0, 0.0, -10.0),
+//                                            glm::vec3(0,0,0),
+//                                            glm::vec3(1,1,1));
+//
+//    auto* objectNodeTransform = new Transform(glm::vec3(10.0,10.0,0.0),
+//                                                   glm::vec3(0.0,0.0,0.0),
+//                                                   glm::vec3(1.0,1.0,1.0));
+//    auto* objectNodeTransform2 = new Transform(glm::vec3(0.0,-5.0,0.0),
+//                                              glm::vec3(180.0,0.0,0.0),
+//                                              glm::vec3(1.0,1.0,1.0));
+//    std::vector<Node*> children;
+//    rootNode = new Node(rootNodeTransform, nullptr,children);
+//
+//    std::vector<Node*> children1;
+//    auto* object = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform);
+//    auto* objectNode = new ObjectNode(objectNodeTransform, rootNode, children1, object);
+//    rootNode->addChildren(std::vector<Node*>{objectNode});
+//
+//    std::vector<Node*> children2;
+//    auto* object2 = new SceneObject(models.find("fireplace")->second, shaders.find("frag_light")->second, objectNodeTransform2);
+//    auto* objectNode2 = new ObjectNode(objectNodeTransform2, objectNode, children2, object2);
+//    objectNode->addChildren(std::vector<Node*>{objectNode2});
 }
 
 unsigned int GameState::loadShaders()
@@ -104,6 +114,114 @@ unsigned int GameState::loadModels() {
         }
     }
     return foundModelsCount;
+}
+
+std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_node<> *childrenNode) {
+    std::vector<Node*> finalChildren;
+    for (rapidxml::xml_node<> *childNode = childrenNode->first_node("Node"); childNode;
+         childNode = childNode->next_sibling())
+    {
+        Node* childGraphNode;
+        /* get node params */
+        NodeType type = (NodeType)std::stoi(childNode->first_attribute("type")->value());
+        std::string nodeName = childNode->first_attribute("name")->value();
+
+        /* get transform node NODE->TRANSFORM */
+        rapidxml::xml_node<> *transformNode = childNode->first_node("Transform");
+        /* get individual transforms from transform not NODE->TRANSFORM->ROTATION
+         *                                                             ->POSITION
+         *                                                             ->SCALE    */
+        rapidxml::xml_node<> *rotationNode = transformNode->first_node("Rotation");
+        rapidxml::xml_node<> *positionNode = transformNode->first_node("Position");
+        rapidxml::xml_node<> *scaleNode = transformNode->first_node("Scale");
+
+        /* get individual attributes from those nodes */
+        glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                       std::stof(positionNode->first_attribute("y")->value()),
+                                       std::stof(positionNode->first_attribute("z")->value()));
+        glm::vec3 rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
+                                       std::stof(rotationNode->first_attribute("y")->value()),
+                                       std::stof(rotationNode->first_attribute("z")->value()));
+        glm::vec3 scale    = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
+                                       std::stof(scaleNode->first_attribute("y")->value()),
+                                       std::stof(scaleNode->first_attribute("z")->value()));
+        /* create new transform object */
+        auto* transform = new Transform(position, rotation, scale);
+        /*PURE TRANSFORM node processing ---------------------------------------------------------------------------- */
+        if(type == PURE_TRANSFORM){
+            childGraphNode = new Node(transform, parentNode, std::vector<Node*>{},nodeName);
+            std::cout << "GAMESTATE::PROCESS_CHILDREN::Created node " << nodeName << " of type " << type << std::endl;
+        }
+        /*OBJECT node processing ------------------------------------------------------------------------------------ */
+        else if (type == OBJECT){
+            /* get scene object node NODE->SCENEOBJECT */
+            rapidxml::xml_node<> *sceneObjectNode = childNode->first_node("SceneObject");
+            /* get scene object parameters*/
+            std::string modelName = sceneObjectNode->first_attribute("model")->value();
+            std::string shaderName = sceneObjectNode->first_attribute("shader")->value();
+            /* find appropriate models and shaders and for later linking */
+            auto model = models.find(modelName);
+            auto shader = shaders.find(shaderName);
+            if(model == models.end()){
+                std::cerr << "GAMESTATE::PROCESS_CHILDREN::Did not find model that should be bound: " << modelName << std::endl;
+                continue;
+            }
+            if(shader == shaders.end()){
+                std::cerr << "GAMESTATE::PROCESS_CHILDREN::Did not find shader that should be bound: " << shaderName << std::endl;
+                continue;
+            }
+            auto* object = new SceneObject(model->second, shader->second, transform);
+            /* create child node */
+            childGraphNode = new ObjectNode(transform, parentNode, std::vector<Node*>{},object, nodeName);
+            std::cout << "GAMESTATE::PROCESS_CHILDREN::Created node " << nodeName << " of type " << type << std::endl;
+        }
+        /*LIGHT node processing ------------------------------------------------------------------------------------- */
+        else if (type == LIGHT){
+            std::cerr << "GAMESTATE::PROCESS_CHILDREN::Not implemented yet";
+            continue;
+        }
+        /*HANDLE ERRORS --------------------------------------------------------------------------------------------- */
+        else {
+            std::cerr << "GAMESTATE::PROCESS_CHILDREN::Node " << nodeName << " has unknown type " << type << std::endl;
+            continue;
+        }
+        rapidxml::xml_node<> *childrensNode = childNode->first_node("Children");
+        /* recursively process children nodes */
+        childGraphNode->addChildren(processChildren(childGraphNode,childrensNode));
+        finalChildren.push_back(childGraphNode);
+    }
+    return finalChildren;
+}
+
+unsigned int GameState::loadSceneGraph(){
+    rapidxml::xml_node<> *xmlRootNode = gameScene->first_node("Root");
+    rapidxml::xml_node<> *sceneGraphNode = xmlRootNode->first_node("SceneGraph");
+    rapidxml::xml_node<> *sceneGraphRootNode = sceneGraphNode->first_node("Node");
+
+    NodeType type = (NodeType)std::stoi(sceneGraphRootNode->first_attribute("type")->value());
+    std::string nodeName = sceneGraphRootNode->first_attribute("name")->value();
+    if(type != PURE_TRANSFORM){
+        std::cerr << "GAMESTATE::LOAD_SCENE_GRAPH::Error sceneGraphRootNode must be of type 1" << std::endl;
+    }
+    rapidxml::xml_node<> *transformNode = sceneGraphRootNode->first_node("Transform");
+    rapidxml::xml_node<> *rotationNode = transformNode->first_node("Rotation");
+    rapidxml::xml_node<> *positionNode = transformNode->first_node("Position");
+    rapidxml::xml_node<> *scaleNode = transformNode->first_node("Scale");
+
+    glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                   std::stof(positionNode->first_attribute("y")->value()),
+                                   std::stof(positionNode->first_attribute("z")->value()));
+    glm::vec3 rotation = glm::vec3(std::stof(rotationNode->first_attribute("x")->value()),
+                                   std::stof(rotationNode->first_attribute("y")->value()),
+                                   std::stof(rotationNode->first_attribute("z")->value()));
+    glm::vec3 scale    = glm::vec3(std::stof(scaleNode->first_attribute("x")->value()),
+                                   std::stof(scaleNode->first_attribute("y")->value()),
+                                   std::stof(scaleNode->first_attribute("z")->value()));
+    auto* transform = new Transform(position, rotation, scale);
+    this->rootNode = new Node(transform, nullptr, std::vector<Node*>{},nodeName);
+    rapidxml::xml_node<> *childrenNode = sceneGraphRootNode->first_node("Children");
+    this->rootNode->addChildren(processChildren(rootNode, childrenNode));
+    return 0;
 }
 
 unsigned int GameState::loadObjectInstances(){
@@ -330,5 +448,6 @@ void GameState::reloadLights() {
     loadLights();
     reloadParams.reloadLights = false;
 }
+
 
 
