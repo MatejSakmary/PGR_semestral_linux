@@ -276,7 +276,7 @@ int main() {
                     gamestate.lights[i]->setLightParam(i, *object->shader);
                 }
                 if(currNode->name.find("fire") != std::string::npos){
-                    gamestate.drawFire(&currNode->transform->position, &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
+                    gamestate.drawFire(currNode->getTransform(t), &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
                 }
                 if(currNode->name == "root"){
                     object->shader->setBool("normalTexUsed", true);

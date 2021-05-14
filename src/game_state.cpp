@@ -548,12 +548,12 @@ void GameState::loadHeightMapParams() {
 void GameState::prepareFireModel() {
     float basic_textured_square_vertices[] = {
             //x    y      z     u     v
-            -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-            -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-            1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, -1.0f, 0.0f, 1.0f, 0.0f
+            -0.5f,  0.8f, 0.0f, 0.0f, 1.0f,
+            -0.5f, -0.2f, 0.0f, 0.0f, 0.0f,
+             0.5f,  0.8f, 0.0f, 1.0f, 1.0f,
+            -0.5f, -0.2f, 0.0f, 0.0f, 0.0f,
+             0.5f,  0.8f, 0.0f, 1.0f, 1.0f,
+             0.5f, -0.2f, 0.0f, 1.0f, 0.0f
     };
     glGenBuffers(1, &fire.VBO);
     glGenVertexArrays(1, &fire.VAO);
@@ -569,13 +569,14 @@ void GameState::prepareFireModel() {
     CHECK_GL_ERROR();
 }
 
-void GameState::drawFire(glm::vec3* transform, glm::mat4* projectionMatrix, glm::mat4* cameraMatrix, float time) {
+void GameState::drawFire(glm::mat4 transform, glm::mat4* projectionMatrix, glm::mat4* cameraMatrix, float time) {
 
     Shader fireLightShader = *shaders.find("fire")->second;
     fireLightShader.use();
-    glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f),*transform);
-    fireTransformMat = glm::translate(fireTransformMat,glm::vec3(0.0f, 0.5f, 0.0f));
-    fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
+    glm::mat4 fireTransformMat = transform;
+//    glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f),*transform);
+//    fireTransformMat = glm::translate(fireTransformMat,glm::vec3(0.0f, 0.5f, 0.0f));
+//    fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
     fireLightShader.setMat4fv("PVMmatrix", (*projectionMatrix) * (*cameraMatrix) * fireTransformMat);
     fireLightShader.setInt("frame", (int)(12 * time)%200);
     glBindVertexArray(fire.VAO);

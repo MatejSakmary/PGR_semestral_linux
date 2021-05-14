@@ -69,7 +69,7 @@ public:
     rapidxml::xml_document<>* gameScene;
     explicit GameState(std::string xmlPath);
     void reloadHandle();
-    void drawFire(glm::vec3* transform,glm::mat4* projectionMatrix, glm::mat4* cameraMatrix,  float time);
+    void drawFire(glm::mat4 transform,glm::mat4* projectionMatrix, glm::mat4* cameraMatrix,  float time);
 
     // !!! ONLY WRITES SCENEOBJECT TRANSFORMS NOTHING ELSE
     void writeToXML();
