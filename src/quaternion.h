@@ -21,8 +21,8 @@ public:
     Quaternion(float x, float y, float z);
 
     void setEuler(float x, float y, float z);
-    Quaternion operator+(const Quaternion& second);
-    Quaternion operator-(const Quaternion& second);
+    Quaternion operator+(const Quaternion& second) const;
+    Quaternion operator-(const Quaternion& second) const;
 
     friend Quaternion operator*(float scalar, const Quaternion& quaternion);
     Quaternion operator*(const Quaternion& second) const;

@@ -149,37 +149,22 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    std::cout << glm::radians(20.0f) << std::endl;
-    glm::mat4 rot = glm::rotate(glm::mat4(1.0f), glm::radians(40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    Quaternion* qat1 = new Quaternion(0.0, 77, 0);
+    Quaternion* qat2 = new Quaternion(22, 0.0, 0.0);
+    Quaternion* qat3 = new Quaternion(0.0, 0.0, 44);
+    Quaternion quat3 = *qat1 * *qat2 * *qat3 ;
+    glm::mat4 rot1 = glm::rotate(glm::mat4(1.0f), glm::radians(77.0f) , glm::vec3(0.0f, 1.0f, 0.0f));
 
-    Quaternion* quat = new Quaternion(0, 0, 50);
-    Quaternion* quat2 = new Quaternion(0, 90, 0);
-    Quaternion quat3 =  (*quat * *quat2 );
-    quat3.Normalize();
-    glm::mat4 rotMat = quat3.getRotMatrix();
-    glm::mat4 rotMatCorr = glm::rotate(glm::mat4(1.0f), glm::radians(50.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    rotMatCorr = glm::rotate(rotMatCorr, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-    std::cout << "rot Mat quat :" << glm::to_string(rotMat) << std::endl;
-    std::cout << "rot Mat corr :" << glm::to_string(rotMatCorr) << std::endl;
+    glm::mat4 test = glm::mat4(1.0f);
+    test[0][0] = 2;
+    test[0][1] = 2;
+    test[0][2] = 2;
+    std::cout << glm::to_string(test) << std::endl;
+    rot1 = glm::rotate(rot1, glm::radians(22.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    rot1 = glm::rotate(rot1, glm::radians(44.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    glm::vec3 vec = glm::vec3(0.0, 0.0, 1.0);
-    glm::vec3 result = glm::mat3(rotMat) * vec;
-    glm::vec3 result1 = glm::mat3(rotMatCorr) * vec;
-    std::cout << "Rotated vec quat " << result.x << " " << result.y << " " << result.z << std::endl;
-    std::cout << "Correct rotated vec " << result1.x << " " << result1.y << " " << result1.z << std::endl;
-
-    Quaternion* interpolatedQuat = new Quaternion;
-    Quaternion::Slerp(*interpolatedQuat, *quat, *quat2, 0.5f);
-
-//    glm::vec3 vec = glm::vec3(1.0, 0.0, 0.0);
-    glm::vec3 euler = interpolatedQuat->getEulerAngles();
-
-    Transform transform(glm::vec3(0.0, 0.0, 0.0),
-                        glm::vec3(270, 0.0, 0.0),
-                        glm::vec3(1.0f, 1.0f,1.0f));
-    std::cout << "euler angles are " << glm::to_string(glm::degrees(euler)) << std::endl;
-//    glm::vec3 result = interpolatedQuat->Rotate(vec);
-    std::cout << "Rotated vec " << result.x << " " << result.y << " " << result.z << std::endl;
+    std::cout << glm::to_string((quat3.getRotMatrix())) << std::endl;
+    std::cout << glm::to_string(rot1) << std::endl;
 
     GameState gamestate = GameState("sceneGraph.xml");
     ImguiState imguiState = ImguiState();
@@ -253,24 +238,24 @@ int main() {
         #pragma endregion
         /* objects rendering */
         #pragma region objects
-//
-//        /* fire draw */
-//
-//        for (SceneObject* object : gamestate.objects) {
-//            object->shader->use();
-//            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
-//            object->shader->setMat4fv("Model", object->transform->getTransformMat());
-//            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
-//
-//            object->shader->setBool("normalTexUsed", false);
-//            object->shader->setFloat("material.shininess", 30.0f);
-//            object->shader->setInt("usedLights", gamestate.lightsUsed);
-//            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-//                gamestate.lights[i]->setLightParam(i, *object->shader);
-//            }
-//            CHECK_GL_ERROR();
-//            object->model->Draw(*object->shader);
-//        }
+
+        /* fire draw */
+
+        for (SceneObject* object : gamestate.objects) {
+            object->shader->use();
+            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
+            object->shader->setMat4fv("Model", object->transform->getTransformMat());
+            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
+
+            object->shader->setBool("normalTexUsed", false);
+            object->shader->setFloat("material.shininess", 30.0f);
+            object->shader->setInt("usedLights", gamestate.lightsUsed);
+            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+                gamestate.lights[i]->setLightParam(i, *object->shader);
+            }
+            CHECK_GL_ERROR();
+            object->model->Draw(*object->shader);
+        }
         /* experimental scene draw */
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);

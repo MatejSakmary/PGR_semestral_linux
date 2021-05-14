@@ -8,11 +8,11 @@ Quaternion::Quaternion(float x, float y, float z) {
     setEuler(x, y, z);
 }
 
-Quaternion Quaternion::operator+(const Quaternion &second) {
+Quaternion Quaternion::operator+(const Quaternion &second) const {
     return {glm::vec3(x + second.x, y + second.y,z + second.z), w + second.w };
 }
 
-Quaternion Quaternion::operator-(const Quaternion &second) {
+Quaternion Quaternion::operator-(const Quaternion &second) const {
     return {glm::vec3(x - second.x, y - second.y,z - second.z), w - second.w };
 }
 
@@ -150,18 +150,33 @@ void Quaternion::Slerp(Quaternion &result, const Quaternion &start, const Quater
 }
 
 glm::mat4 Quaternion::getRotMatrix() {
+    float s = 2.0f / Quaternion::Dot(*this, *this);
+
+    float xs = s * this->x;
+    float ys = s * this->y;
+    float zs = s * this->z;
+    float wx = this->w * xs;
+    float wy = this->w * ys;
+    float wz = this->w * zs;
+    float xx = this->x * xs;
+    float xy = this->x * ys;
+    float xz = this->x * zs;
+    float yy = this->y * ys;
+    float yz = this->y * zs;
+    float zz = this->z * zs;
+
     auto* rot = new glm::mat4(1.0f);
-    (*rot)[0][0] = 2 * (x * x + y * y) - 1;
-    (*rot)[1][0] = 2 * (y * z - x * w);
-    (*rot)[2][0] = 2 * (y * w + x * z);
+    (*rot)[0][0] = 1.0f - (yy + zz);
+    (*rot)[0][1] = xy + wz;
+    (*rot)[0][2] = xz - wy;
 
-    (*rot)[0][1] = 2 * (y * z + x * w);
-    (*rot)[1][1] = 2 * (x * x + z * z) - 1;
-    (*rot)[2][1] = 2 * (z * w - x * y);
+    (*rot)[1][0] = xy - wz;
+    (*rot)[1][1] = 1.0f - (xx + zz);
+    (*rot)[1][2] = yz + wx;
 
-    (*rot)[0][2] = 2 * (y * w - x * z);
-    (*rot)[1][2] = 2 * (z * w + x * y);
-    (*rot)[2][2] = 2 * (x * x + w * w) - 1;
+    (*rot)[2][0] = xz + wy;
+    (*rot)[2][1] = yz - wx;
+    (*rot)[2][2] = 1.0f - (xx + yy);
 
     return *rot;
 }
