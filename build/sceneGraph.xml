@@ -135,66 +135,392 @@
 				<Scale x="300" y="300" z="300"/>
 			</Transform>
 			<Children>
-				<Node name="linear animation" type="3">
-					<Start>
+				<Node name="centering node" type="1">
+					<Transform>
 						<Rotation x="0" y="0" z="0"/>
 						<Position x="150" y="0" z="150"/>
-						<Scale x="1" y="1" z="1"/>
-					</Start>
-					<End>
-						<Rotation x="0" y="270" z="0"/>
-						<Position x="150" y="10" z="150"/>
-						<Scale x="1" y="1" z="1"/>
-					</End>
-                    <Children>
-						<Node name="fireplaceOrigin" type="1">
+						<Scale x="0" y="0" z="0"/>
+					</Transform>
+					<Children>
+						<Node name="palms_around_portal_origin" type="1">
 							<Transform>
-								<Rotation x="0" y="0" z="0"/>
-								<Position x="0" y="0" z="0"/>
+								<Rotation x="0" y="90" z="0"/>
+								<Position x="43.2" y="-13.433" z="-18.841"/>
 								<Scale x="0" y="0" z="0"/>
 							</Transform>
 							<Children>
-								<Node name="linear animation2" type="3">
-									<Start>
-										<Rotation x="0" y="0" z="0"/>
-										<Position x="0" y="0" z="0"/>
-										<Scale x="1" y="1" z="1"/>
-									</Start>
-									<End>
-										<Rotation x="190" y="0" z="0"/>
-										<Position x="0" y="0" z="0"/>
-										<Scale x="0.2" y="0.2" z="0.2"/>
-									</End>
+								<Node name="palm_in_ring_1" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="267.0" y="0" z="-13"/>
+										<Position x="22.338" y="-4.478" z="-47.826"/>
+										<Scale x="0.028" y="0.028" z="0.028"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_ring_2" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="289.0" y="-12" z="24"/>
+										<Position x="22.388" y="-4.478" z="-46.6728"/>
+										<Scale x="0.017" y="0.017" z="0.017"/>
+									</Transform>
 									<Children>
-										<!--   Note-> to properly render fireplace (with fire) the name of the node must contain "fire" -->
-										<Node name="fireplace" type="2">
-											<SceneObject model="fireplace" shader="frag_light"/>
+										<Node name="plant_palm_base_2" type="2">
+											<SceneObject model="plant" shader="frag_light"/>
 											<Transform>
 												<Rotation x="0" y="0" z="0"/>
-												<Position x="0" y="0" z="0"/>
-												<Scale x="1.5" y="1.5" z="1.5"/>
-											</Transform>
-											<Children></Children>
-										</Node>
-										<Node name="palm1" type="2">
-											<SceneObject model="palm" shader="frag_light"/>
-											<Transform>
-												<Rotation x="270" y="0" z="0"/>
-												<Position x="0" y="0" z="-5"/>
-												<Scale x="0.02" y="0.02" z="0.02"/>
+												<Position x="-0.5" y="0.4" z="0.348"/>
+												<Scale x="0.3" y="0.3" z="0.3"/>
 											</Transform>
 											<Children></Children>
 										</Node>
 									</Children>
 								</Node>
-								<Node name="palm2" type="2">
+								<Node name="palm_in_ring_3" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="267.0" y="0" z="0"/>
+										<Position x="22.388" y="-2.230" z="-15.942"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_ring_4" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="276.0" y="0" z="0"/>
+										<Position x="-40.299" y="4.478" z="7.246"/>
+										<Scale x="0.022" y="0.022" z="0.022"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_ring_5" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="272.0" y="23" z="0"/>
+										<Position x="-19.403" y="-4.478" z="-53.623"/>
+										<Scale x="0.032" y="0.032" z="0.032"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_ring_6" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="269.0" y="20" z="20"/>
+										<Position x="-31.343" y="-1.230" z="-33.333"/>
+										<Scale x="0.028" y="0.028" z="0.028"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="vegetation_cluster_2" type="1">
+							<Transform>
+								<Rotation x="0" y="156" z="0"/>
+								<Position x="-73.138" y="-4.478" z="-47.826"/>
+								<Scale x="0" y="0" z="0"/>
+							</Transform>
+							<Children>
+								<Node name="cactus_in_cluster_1" type="2">
+									<SceneObject model="cactus3" shader="frag_light"/>
+									<Transform>
+										<Rotation x="256.5" y="9" z="72"/>
+										<Position x="5.882" y="0" z="0"/>
+										<Scale x="0.038" y="0.038" z="0.038"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_2" type="2">
+									<SceneObject model="cactus1" shader="frag_light"/>
+									<Transform>
+										<Rotation x="241.0" y="9" z="93"/>
+										<Position x="-1.941" y="-1.1" z="1.941"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_cluster_1" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="267.0" y="0" z="0"/>
+										<Position x="-7.941" y="-2" z="1.449"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_cluster_2" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="270.0" y="20" z="0.0"/>
+										<Position x="1.941" y="-1.7" z="9.451"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="vegetation_cluster" type="1">
+							<Transform>
+								<Rotation x="20" y="0" z="0"/>
+								<Position x="10.448" y="-5.10" z="-94.203"/>
+								<Scale x="0" y="0" z="0"/>
+							</Transform>
+							<Children>
+								<Node name="cactus_in_cluster_1" type="2">
+									<SceneObject model="cactus3" shader="frag_light"/>
+									<Transform>
+										<Rotation x="256.5" y="9" z="72"/>
+										<Position x="5.882" y="0" z="0"/>
+										<Scale x="0.038" y="0.038" z="0.038"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_2" type="2">
+									<SceneObject model="cactus1" shader="frag_light"/>
+									<Transform>
+										<Rotation x="241.0" y="9" z="93"/>
+										<Position x="-1.941" y="0" z="1.941"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_cluster_1" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="267.0" y="0" z="0"/>
+										<Position x="-7.941" y="0" z="1.449"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="palm_in_cluster_2" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="270.0" y="20" z="0.0"/>
+										<Position x="1.941" y="0" z="9.451"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="cactus_cluster_2" type="1">
+							<Transform>
+								<Rotation x="0" y="0" z="-20"/>
+								<Position x="-14.706" y="-5.9" z="41.176"/>
+								<Scale x="0" y="0" z="0"/>
+							</Transform>
+							<Children>
+								<Node name="cactus_in_cluster_1" type="2">
+									<SceneObject model="cactus3" shader="frag_light"/>
+									<Transform>
+										<Rotation x="256.5" y="9" z="72"/>
+										<Position x="5.882" y="0" z="0"/>
+										<Scale x="0.038" y="0.038" z="0.038"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_2" type="2">
+									<SceneObject model="cactus1" shader="frag_light"/>
+									<Transform>
+										<Rotation x="241.0" y="342" z="73"/>
+										<Position x="2.941" y="0" z="-2.941"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_3" type="2">
+									<SceneObject model="cactus2" shader="frag_light"/>
+									<Transform>
+										<Rotation x="270.0" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="0.037" y="0.037" z="0.037"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="cactus_cluster_1" type="1">
+							<Transform>
+								<Rotation x="0" y="90" z="0"/>
+								<Position x="64.706" y="-11.5" z="0"/>
+								<Scale x="0" y="0" z="0"/>
+							</Transform>
+							<Children>
+								<Node name="cactus_in_cluster_1" type="2">
+									<SceneObject model="cactus3" shader="frag_light"/>
+									<Transform>
+										<Rotation x="256.5" y="9" z="72"/>
+										<Position x="5.882" y="0" z="0"/>
+										<Scale x="0.038" y="0.038" z="0.038"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_2" type="2">
+									<SceneObject model="cactus1" shader="frag_light"/>
+									<Transform>
+										<Rotation x="251.0" y="342" z="153"/>
+										<Position x="2.941" y="0" z="-2.941"/>
+										<Scale x="0.025" y="0.025" z="0.025"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="cactus_in_cluster_3" type="2">
+									<SceneObject model="cactus2" shader="frag_light"/>
+									<Transform>
+										<Rotation x="295.0" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="0.037" y="0.037" z="0.037"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="rock1" type="2">
+							<SceneObject model="rock1" shader="frag_light"/>
+							<Transform>
+								<Rotation x="-31.176" y="0" z="0"/>
+								<Position x="0" y="-20.58" z="-1.1"/>
+								<Scale x="0.015" y="0.015" z="0.015"/>
+							</Transform>
+							<Children></Children>
+						</Node>
+						<Node name="rock2" type="2">
+							<SceneObject model="rock2" shader="frag_light"/>
+							<Transform>
+								<Rotation x="19.176" y="0" z="0"/>
+								<Position x="0" y="-15.6" z="-50"/>
+								<Scale x="0.015" y="0.015" z="0.015"/>
+							</Transform>
+							<Children></Children>
+						</Node>
+						<Node name="rock3" type="2">
+							<SceneObject model="rock3" shader="frag_light"/>
+							<Transform>
+								<Rotation x="19.176" y="0" z="-10"/>
+								<Position x="-14.706" y="-13.6" z="-47.059"/>
+								<Scale x="0.088" y="0.088" z="0.088"/>
+							</Transform>
+							<Children></Children>
+						</Node>
+						<Node name="portal" type="2">
+							<SceneObject model="portal" shader="frag_light"/>
+							<Transform>
+								<Rotation x="267" y="0" z="197"/>
+								<Position x="19.767" y="-27.5" z="-16.6"/>
+								<Scale x="0.407" y="0.407" z="0.407"/>
+							</Transform>
+							<Children></Children>
+						</Node>
+                        <Node name="oasis_with_fire_origin" type="1">
+                            <Transform>
+								<Rotation x="0" y="0" z="0"/>
+								<Position x="-38.235" y="-14.906" z="-11.05"/>
+								<Scale x="0" y="0" z="0"/>
+							</Transform>
+							<Children>
+								<Node name="fireplace" type="2">
+									<SceneObject model="fireplace" shader="frag_light"/>
+									<Transform>
+										<Rotation x="0" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="1.5" y="1.5" z="1.5"/>
+									</Transform>
+									<Children></Children>
+								</Node>
+								<Node name="fireplace_palm_1" type="2">
 									<SceneObject model="palm" shader="frag_light"/>
 									<Transform>
 										<Rotation x="270" y="0" z="0"/>
-										<Position x="3" y="0" z="3"/>
+										<Position x="5.882" y="-0.5" z="0"/>
+										<Scale x="0.02" y="0.02" z="0.02"/>
+									</Transform>
+									<Children>
+										<Node name="plant_palm_base_1" type="2">
+											<SceneObject model="plant" shader="frag_light"/>
+											<Transform>
+												<Rotation x="0" y="0" z="0"/>
+												<Position x="-0.8" y="-0.8" z="0.2"/>
+												<Scale x="0.2" y="0.2" z="0.2"/>
+											</Transform>
+											<Children></Children>
+										</Node>
+									</Children>
+								</Node>
+								<Node name="fireplace_palm_2" type="2">
+									<SceneObject model="palm" shader="frag_light"/>
+									<Transform>
+										<Rotation x="270" y="20" z="40"/>
+										<Position x="-5.882" y="0.4" z="3.2"/>
 										<Scale x="0.02" y="0.02" z="0.02"/>
 									</Transform>
 									<Children></Children>
+								</Node>
+							</Children>
+						</Node>
+						<Node name="linear animation" type="3">
+							<Start>
+								<Rotation x="0" y="0" z="0"/>
+								<Position x="-150" y="0" z="-150"/>
+								<Scale x="1" y="1" z="1"/>
+							</Start>
+							<End>
+								<Rotation x="0" y="270" z="0"/>
+								<Position x="-150" y="10" z="-150"/>
+								<Scale x="1" y="1" z="1"/>
+							</End>
+							<Children>
+								<Node name="fireplaceOrigin" type="1">
+									<Transform>
+										<Rotation x="0" y="0" z="0"/>
+										<Position x="0" y="0" z="0"/>
+										<Scale x="0" y="0" z="0"/>
+									</Transform>
+									<Children>
+										<Node name="linear animation2" type="3">
+											<Start>
+												<Rotation x="0" y="0" z="0"/>
+												<Position x="0" y="0" z="0"/>
+												<Scale x="1" y="1" z="1"/>
+											</Start>
+											<End>
+												<Rotation x="190" y="0" z="0"/>
+												<Position x="0" y="0" z="0"/>
+												<Scale x="0.2" y="0.2" z="0.2"/>
+											</End>
+											<Children>
+												<!--   Note-> to properly render fireplace (with fire) the name of the node must contain "fire" -->
+												<Node name="fireplace" type="2">
+													<SceneObject model="fireplace" shader="frag_light"/>
+													<Transform>
+														<Rotation x="0" y="0" z="0"/>
+														<Position x="0" y="0" z="0"/>
+														<Scale x="1.5" y="1.5" z="1.5"/>
+													</Transform>
+													<Children></Children>
+												</Node>
+												<Node name="palm1" type="2">
+													<SceneObject model="palm" shader="frag_light"/>
+													<Transform>
+														<Rotation x="270" y="0" z="0"/>
+														<Position x="0" y="0" z="-5"/>
+														<Scale x="0.02" y="0.02" z="0.02"/>
+													</Transform>
+													<Children></Children>
+												</Node>
+											</Children>
+										</Node>
+										<Node name="palm2" type="2">
+											<SceneObject model="palm" shader="frag_light"/>
+											<Transform>
+												<Rotation x="270" y="0" z="0"/>
+												<Position x="3" y="0" z="3"/>
+												<Scale x="0.02" y="0.02" z="0.02"/>
+											</Transform>
+											<Children></Children>
+										</Node>
+									</Children>
 								</Node>
 							</Children>
 						</Node>

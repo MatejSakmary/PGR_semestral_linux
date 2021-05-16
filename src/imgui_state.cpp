@@ -53,15 +53,28 @@ void ImguiState::ImguiDraw(GameState &gameState)
     }
     if(showObjectsWindow){
         ImGui::Begin("Object Properties", &showObjectsWindow);
-        for(unsigned int i = 0; i < gameState.objects.size(); i++)
-        {
-            SceneObject& currObj = *gameState.objects[i];
-            if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
-                ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform->position, -50.0f, 50.0f);
-                ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform->rotation,.0f, 360.0f);
-                ImGui::SliderFloat3(("Scale_" + std::to_string(i)).c_str(), (float*) &currObj.transform->scale,0.0f, 1.0f);
-            }
+        std::queue<Node*> nodes;
+        nodes.push(gameState.rootNode);
+        while(!nodes.empty()){
+           Node* currNode = nodes.front();
+           nodes.pop();
+           if(ImGui::CollapsingHeader(("Object " + currNode->name).c_str())){
+               ImGui::SliderFloat3(("position_"+currNode->name).c_str(), (float*) &currNode->transform->position, -100, 100);
+               ImGui::SliderFloat3(("scale"+currNode->name).c_str(), (float*) &currNode->transform->scale, 0, 2);
+           }
+           for (auto child : currNode->children){
+               nodes.push(child);
+           }
         }
+//        for(unsigned int i = 0; i < gameState.objects.size(); i++)
+//        {
+//            SceneObject& currObj = *gameState.objects[i];
+//            if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
+//                ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform->position, -50.0f, 50.0f);
+//                ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform->rotation,.0f, 360.0f);
+//                ImGui::SliderFloat3(("Scale_" + std::to_string(i)).c_str(), (float*) &currObj.transform->scale,0.0f, 1.0f);
+//            }
+//        }
         ImGui::End();
     }
     /* lights prop */

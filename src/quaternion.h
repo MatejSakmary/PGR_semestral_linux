@@ -37,7 +37,6 @@ public:
     static float Dot(const Quaternion& first, const Quaternion& second);
     static void Slerp(Quaternion& result, const Quaternion& start, const Quaternion& end, float t);
 
-
 };
 
 

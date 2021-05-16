@@ -9,6 +9,7 @@
 #include "imgui_impl_opengl3.h"
 
 #include <vector>
+#include <queue>
 
 class ImguiState {
 public:

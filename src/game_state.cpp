@@ -426,6 +426,7 @@ void GameState::reloadObjects() {
     }
     objects.clear();
     loadObjectInstances();
+    loadSceneGraph();
     reloadParams.reloadObjects = false;
 }
 
@@ -461,6 +462,7 @@ void GameState::reloadModelsAndObjects() {
     }
     models.clear();
     loadModels();
+    loadSceneGraph();
     reloadObjects();
     reloadParams.reloadModels = false;
 }

@@ -69,8 +69,8 @@ void processInput(GLFWwindow *window) {
     lastFrame = currentFrame;
     gameState_ptr->mouseParameters.pressDelay -= deltaTime;
 
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+//    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+//        glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS &&
        (gameState_ptr->mouseParameters.pressDelay < 0)) {
@@ -268,7 +268,7 @@ int main() {
                 object->shader->use();
                 object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * currNode->getTransform(t));
                 object->shader->setMat4fv("Model", currNode->getTransform(t));
-                object->shader->setMat4fv("NormalModel", glm::transpose(currNode->getTransform(t)));
+                object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(currNode->getTransform(t))));
                 object->shader->setBool("normalTexUsed", false);
                 object->shader->setFloat("material.shininess", 30.0f);
                 object->shader->setInt("usedLights", gamestate.lightsUsed);
