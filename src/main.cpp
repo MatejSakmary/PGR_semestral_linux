@@ -21,38 +21,23 @@
 
 static std::vector<std::string> Names;
 
-static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
-static float scale = 0.17;
-static float translation = 12;
 
 static GameState* gameState_ptr = nullptr;
 static ImguiState* imguiState_ptr = nullptr;
 
-void setupTriangle(unsigned int &VBO, unsigned int &VAO) {
-    float vertices[] = {
-            -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
-            0.0f, 0.5f, 0.0f
-    };
-    glGenBuffers(1, &VBO);
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
-    glEnableVertexAttribArray(0);
-}
-
 void mouseCallback(GLFWwindow *window, double x, double y) {
+    /* Check if I want to move camera by moving mouse */
     if (!gameState_ptr->mouseParameters.mouseControl) return;
 
+    /* Prevent initial jump of camera orientation when switching on mouse control */
     if (gameState_ptr->mouseParameters.firstMouseInput) {
         gameState_ptr->mouseParameters.lastX = x;
         gameState_ptr->mouseParameters.lastY = y;
         gameState_ptr->mouseParameters.firstMouseInput = false;
     }
 
+    /* Update camera parameters */
     float xoffset = x - gameState_ptr->mouseParameters.lastX;
     float yoffset = gameState_ptr->mouseParameters.lastY - y;
     gameState_ptr->mouseParameters.lastX = x;
@@ -60,24 +45,34 @@ void mouseCallback(GLFWwindow *window, double x, double y) {
     gameState_ptr->camera->updateFrontVec(xoffset, yoffset);
 }
 
+/* Handle most of general input */
 void processInput(GLFWwindow *window) {
     float currentFrame = glfwGetTime();
-    deltaTime = currentFrame - lastFrame;
+    /* update delta time */
+    gameState_ptr->deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
-    gameState_ptr->mouseParameters.pressDelay -= deltaTime;
 
-//    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-//        glfwSetWindowShouldClose(window, true);
+    gameState_ptr->mouseParameters.pressDelay -= gameState_ptr->deltaTime;
+
+    /* end program */
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+        glfwSetWindowShouldClose(window, true);
+    }
+
+    /* Handle left click ----------------------------------------------------------*/
     int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     if(state == GLFW_PRESS && gameState_ptr->mouseParameters.pressDelay < 0){
         unsigned int ClickedIndex;
         double xpos, ypos;
+        /* If mouse cursor is enable use it's position, if it is disabled use center of screen*/
         if(!gameState_ptr->mouseParameters.mouseControl){
             glfwGetCursorPos(window, &xpos, &ypos);
         }else {
+            /*TODO: Change from hardcoded 1920 and 1080 to actuall screen size */
             xpos = 1920/2;
             ypos = 1080/2;
         }
+        /*Check for clickable objects, if one is hit toggle it's state */
         glReadPixels(xpos, 1080-ypos-1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &ClickedIndex);
         if(ClickedIndex > 0){
             if(Names[ClickedIndex-1].find("fire") != std::string::npos){
@@ -88,6 +83,7 @@ void processInput(GLFWwindow *window) {
                 gameState_ptr->lights[3]->enabled = !gameState_ptr->lights[3]->enabled;
             }
         }
+        /*Set press delay so that when one click spans multiple frames there is no rapid switching on and off */
         gameState_ptr->mouseParameters.pressDelay = 0.2f;
     }
 
@@ -112,28 +108,29 @@ void processInput(GLFWwindow *window) {
         gameState_ptr->camera->switchToStatic(2);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-        gameState_ptr->camera->forward(deltaTime);
+        gameState_ptr->camera->forward(gameState_ptr->deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-        gameState_ptr->camera->back(deltaTime);
+        gameState_ptr->camera->back(gameState_ptr->deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-        gameState_ptr->camera->left(deltaTime);
+        gameState_ptr->camera->left(gameState_ptr->deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-        gameState_ptr-> camera->right(deltaTime);
+        gameState_ptr-> camera->right(gameState_ptr->deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-        gameState_ptr->camera->up(deltaTime);
+        gameState_ptr->camera->up(gameState_ptr->deltaTime);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-        gameState_ptr->camera->down(deltaTime);
+        gameState_ptr->camera->down(gameState_ptr->deltaTime);
     }
 }
 
 int main() {
     const char *glsl_version = "#version 130";
 
+    /* Init GLFW----------------------------------------------------------------------------- */
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -148,13 +145,15 @@ int main() {
     glfwMakeContextCurrent(window);
     glfwSetCursorPosCallback(window, mouseCallback);
 
+    /* Init glad (Load OGL function pointers */
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
+    /* Enable Depth testing so objects are rendered properly */
     glEnable(GL_DEPTH_TEST);
 
-    /* setup imgui context ---------------*/
+    /* setup imgui context -----------------------------------------------------------------------------------*/
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
@@ -174,7 +173,8 @@ int main() {
                                 glm::vec3(-50.0f, 20.0f, -10.0f),
                                 glm::vec3(200.0f, 20.0f, 170.0f),
                                 glm::vec3(20.0f, 20.0f, -320.0f));
-    /* Skybox texture ------------------------------------- */
+    /* Prepare skybox texture pahs ------------------------------------------------------------ */
+    /* TODO: if there is time, move those paths to config xml and load them in game state constructor*/
     std::vector<std::string> dayCubemapPaths;
     dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_rt.tga");
     dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_lf.tga");
@@ -182,7 +182,6 @@ int main() {
     dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_dn.tga");
     dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_bk.tga");
     dayCubemapPaths.emplace_back("../data/envmap_grimmnight/grimmnight_ft.tga");
-    /* Second cubemap texture */
     std::vector<std::string> nightCubemapPaths;
     nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_rt.tga");
     nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_lf.tga");
@@ -193,37 +192,49 @@ int main() {
     Cubemap cubemap = Cubemap(nightCubemapPaths, dayCubemapPaths, 150);
     CHECK_GL_ERROR();
 
-
+    /* Main render loop -------------------------------------------------------------*/
     while (!glfwWindowShouldClose(window)) {
+        /* Update light positions and intensities */
+        /* TODO: Move into "update" function */
         float t = (float)(glm::sin(glfwGetTime()/3)+1)/2;
         PointLight* point = (PointLight*)gamestate.lights[1];
+        /* TODO: Make the light intensity fluctuation more intensive -> target quadratic component?*/
         point->linear = (sin(glfwGetTime())+1)/10;
 
+        /* Update UFO reflector */
         SpotLight* spot = (SpotLight*)gamestate.lights[3];
         spot->position =  gamestate.ufoNode->getTransform(t) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         spot->direction = glm::mat3(gamestate.ufoNode->getTransform(t)) * glm::vec3(0.0f, 0.0f, -1.0f);
+
         processInput(window);
 
+        /* ImGui render process ------------------------*/
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
         ImGuiIO &io = ImGui::GetIO();
-
         imguiState_ptr->ImguiDraw(gamestate);
         ImGui::Render();
+
+        /* Setup OpenGL framebuffer ------------------------*/
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
+        /* This is the value stencil buffer is cleared with -> similar to clear color for framebuffer*/
         glClearStencil(0);
+        /* Setup stencil function for object picking -> Update only if both depth and stencil tests pass otherwise
+         * keep previous value */
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         glEnable(GL_STENCIL_TEST);
 
+        /* Init camera and projection matrix */
         glm::mat4 cameraMatrix = gamestate.camera->getViewMatrix(t);
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
                                                        io.DisplaySize.x / io.DisplaySize.y, 0.1f, 500.0f);
 
         CHECK_GL_ERROR();
+        /* TODO: Uniform buffer? */
         /* set common shader variables for each shader probably should be uniform buffer
          * but I don't have time */
         for(const auto& shader : gamestate.shaders){
@@ -240,13 +251,18 @@ int main() {
         gamestate.shaders.find("cubemap")->second->use();
         CHECK_GL_ERROR();
         unsigned int lights_index = 0;
+        /* Set all enabled light uniforms in shader ------------------------*/
         for(unsigned int i = 0; i < gamestate.lights.size(); i++){
             if(gamestate.lights[i]->enabled){
                 gamestate.lights[i]->setLightParam(lights_index++, *gamestate.shaders.find("cubemap")->second);
             }
         }
+        /* This is the counter use in previous for loop which at the end has the count of all enabled lights */
         gamestate.lightsUsed = lights_index;
         gamestate.shaders.find("cubemap")->second->setInt("usedLights", gamestate.lightsUsed);
+        /* Don't write to depth buffer, since skybox is rendered as unit cube at the scene origin (after view transform)
+         * If depth test was not disabled I would only see objects that are closer than this cube -> almost all objects
+         * would fail depth test */
         glDepthMask(GL_FALSE);
         cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime()/4);
         glDepthMask(GL_TRUE);
@@ -254,16 +270,20 @@ int main() {
 
         /* objects rendering ----------------------------------------------------------------------------*/
         #pragma region objects
+        /* This is standard Stack parse of a tree*/
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);
 
+        /* TODO: Name Setting should be only done in first frame and and after graph reload not each frame*/
         Names.clear();
+        /*This counter is used as the value written into stencil buffer -> essentially id of object */
         int counter = 1;
-        while(nodes.size() != 0){
+        while(!nodes.empty()){
             Node* currNode = nodes.front();
             nodes.pop();
 
             if(currNode->type == OBJECT){
+                /* Set uniforms -------------------------------------------------------------------------------*/
                 SceneObject* object = ((ObjectNode*)currNode)->object;
                 object->shader->use();
                 object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * currNode->getTransform(t));
@@ -272,25 +292,38 @@ int main() {
                 object->shader->setBool("normalTexUsed", false);
                 object->shader->setFloat("material.shininess", 30.0f);
                 object->shader->setInt("usedLights", gamestate.lightsUsed);
-                unsigned int lights_index = 0;
+                lights_index = 0;
+                /* Set light uniforms---------------------------------------------------------------*/
                 for(unsigned int i = 0; i < gamestate.lights.size(); i++){
                     if(gamestate.lights[i]->enabled){
                         gamestate.lights[i]->setLightParam(lights_index++, *object->shader);
                     }
                 }
+                /* TODO: This is really messy way to add fire animation */
+                /* Add fire animation -> very hacky but I don't have time to come up with something better*/
                 if(currNode->name.find("fire") != std::string::npos && gamestate.lights[2]->enabled){
                     gamestate.drawFire(currNode->getTransform(t), &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
                 }
+                /* Again very messy way to render terrain but not enough time :( */
                 if(currNode->name == "root"){
                     object->shader->setBool("normalTexUsed", true);
                     object->shader->setFloat("scale", gamestate.terrainParams.scale);
                 }
                 CHECK_GL_ERROR();
+                /* The order at which nodes are rendered corresponds to the order they are stored in names vector
+                 * This makes it so that I can easily lookup Node name which was clicked on by retrieving the value
+                 * stored in stencil buffer and using it as index-1 into names vector */
                 Names.push_back(currNode->name);
+                /* Always write to stencil buffer with a mask of 255 -> since the size of stencil buffer is 255
+                 * every value will be written to stencil buffer
+                 * NOTE -> stencil test is performed after depth test, so fragment first has to pass depth test in
+                 * order have it's index written into stencil buffer, this means only the "front most" object
+                 * is selected by mouse */
                 glStencilFunc(GL_ALWAYS, counter++, -1);
                 object->model->Draw(*object->shader);
                 CHECK_GL_ERROR();
             }
+            /*Add node's children to queue for rendering */
             for(auto child : currNode->children){
                 nodes.push(child);
             }
@@ -301,6 +334,7 @@ int main() {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
+        /* If there was request to reload any part of the scene do it here before the next render cycle */
         if(gamestate.reloadParams.reloadShaders ||
            gamestate.reloadParams.reloadModels ||
            gamestate.reloadParams.reloadLights ||

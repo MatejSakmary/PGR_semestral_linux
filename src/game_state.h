@@ -54,9 +54,6 @@ class GameState{
 public:
     int lightsUsed;
     float deltaTime;
-    bool fireplace_active;
-    bool ufo_light_active;
-    bool portal_light_active;
 
     Camera *camera;
     MouseParameters mouseParameters;
@@ -76,9 +73,6 @@ public:
     explicit GameState(std::string xmlPath);
     void reloadHandle();
     void drawFire(glm::mat4 transform,glm::mat4* projectionMatrix, glm::mat4* cameraMatrix,  float time);
-
-    // !!! ONLY WRITES SCENEOBJECT TRANSFORMS NOTHING ELSE
-    void writeToXML();
 
 private:
     // this is needed by rapidxml

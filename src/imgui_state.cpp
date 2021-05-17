@@ -8,7 +8,6 @@ void ImguiState::ImguiDraw(GameState &gameState)
 {
     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-    if(ImGui::Button("Export XML")){ gameState.writeToXML();}
     if(ImGui::Button("Reload Shaders")){ gameState.reloadParams.reloadShaders = true;}
     ImGui::SameLine();
     if(ImGui::Button("Reload Objects")){ gameState.reloadParams.reloadObjects = true;}
