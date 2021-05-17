@@ -55,6 +55,8 @@ public:
     int lightsUsed;
     float deltaTime;
     bool fireplace_active;
+    bool ufo_light_active;
+    bool portal_light_active;
 
     Camera *camera;
     MouseParameters mouseParameters;

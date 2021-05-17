@@ -13,7 +13,6 @@
 #include "imgui_state.h"
 #include "bezier.h"
 #include "cubemap.h"
-#include "quaternion.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -82,14 +81,11 @@ void processInput(GLFWwindow *window) {
         glReadPixels(xpos, 1080-ypos-1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &ClickedIndex);
         if(ClickedIndex > 0){
             if(Names[ClickedIndex-1].find("fire") != std::string::npos){
-                if (gameState_ptr->fireplace_active)
-                {
-                    gameState_ptr->fireplace_active = false;
-                    gameState_ptr->lightsUsed = 2;
-                }else{
-                    gameState_ptr->fireplace_active = true;
-                    gameState_ptr->lightsUsed = 3;
-                }
+                gameState_ptr->lights[2]->enabled = !gameState_ptr->lights[2]->enabled;
+            }else if(Names[ClickedIndex-1].find("portal") != std::string::npos){
+                gameState_ptr->lights[1]->enabled = !gameState_ptr->lights[1]->enabled;
+            }else if(Names[ClickedIndex-1].find("UFO") != std::string::npos){
+                gameState_ptr->lights[3]->enabled = !gameState_ptr->lights[3]->enabled;
             }
         }
         gameState_ptr->mouseParameters.pressDelay = 0.2f;
@@ -239,38 +235,25 @@ int main() {
             shader.second->setFloat("b",gamestate.fogParams.treshold);
             CHECK_GL_ERROR();
         }
-        /* skybox rendering ---------------------------------*/
+        /* skybox rendering -------------------------------------------------------------------------------*/
         #pragma region skybox
         gamestate.shaders.find("cubemap")->second->use();
-        gamestate.shaders.find("cubemap")->second->setInt("usedLights", gamestate.lightsUsed);
         CHECK_GL_ERROR();
-        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-            gamestate.lights[i]->setLightParam(i, *gamestate.shaders.find("cubemap")->second);
+        unsigned int lights_index = 0;
+        for(unsigned int i = 0; i < gamestate.lights.size(); i++){
+            if(gamestate.lights[i]->enabled){
+                gamestate.lights[i]->setLightParam(lights_index++, *gamestate.shaders.find("cubemap")->second);
+            }
         }
+        gamestate.lightsUsed = lights_index;
+        gamestate.shaders.find("cubemap")->second->setInt("usedLights", gamestate.lightsUsed);
         glDepthMask(GL_FALSE);
         cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime()/4);
         glDepthMask(GL_TRUE);
         #pragma endregion
-        /* objects rendering */
-        #pragma region objects
-        /* fire draw */
 
-//        for (SceneObject* object : gamestate.objects) {
-//            object->shader->use();
-//            object->shader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * object->transform->getTransformMat());
-//            object->shader->setMat4fv("Model", object->transform->getTransformMat());
-//            object->shader->setMat4fv("NormalModel", glm::transpose(glm::inverse(object->transform->getTransformMat())));
-//
-//            object->shader->setBool("normalTexUsed", false);
-//            object->shader->setFloat("material.shininess", 30.0f);
-//            object->shader->setInt("usedLights", gamestate.lightsUsed);
-//            for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-//                gamestate.lights[i]->setLightParam(i, *object->shader);
-//            }
-//            CHECK_GL_ERROR();
-//            object->model->Draw(*object->shader);
-//        }
-        /* experimental scene draw */
+        /* objects rendering ----------------------------------------------------------------------------*/
+        #pragma region objects
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);
 
@@ -289,10 +272,13 @@ int main() {
                 object->shader->setBool("normalTexUsed", false);
                 object->shader->setFloat("material.shininess", 30.0f);
                 object->shader->setInt("usedLights", gamestate.lightsUsed);
-                for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
-                    gamestate.lights[i]->setLightParam(i, *object->shader);
+                unsigned int lights_index = 0;
+                for(unsigned int i = 0; i < gamestate.lights.size(); i++){
+                    if(gamestate.lights[i]->enabled){
+                        gamestate.lights[i]->setLightParam(lights_index++, *object->shader);
+                    }
                 }
-                if(currNode->name.find("fire") != std::string::npos && gamestate.fireplace_active){
+                if(currNode->name.find("fire") != std::string::npos && gamestate.lights[2]->enabled){
                     gamestate.drawFire(currNode->getTransform(t), &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
                 }
                 if(currNode->name == "root"){

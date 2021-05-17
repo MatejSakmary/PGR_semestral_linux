@@ -17,6 +17,7 @@ typedef enum LType{
 class Light {
 public:
     LightType type;
+    bool enabled;
 
     glm::vec3 ambient{};
     glm::vec3 diffuse{};
@@ -32,6 +33,7 @@ public:
     DirectionalLight(glm::vec3 ambient,glm::vec3 diffuse,
                      glm::vec3 specular, glm::vec3 direction) : direction{direction}
     {
+        this->enabled = true;
         this->type = DIRECTIONAL_LIGHT;
         this->ambient = ambient;
         this->diffuse = diffuse;
@@ -54,6 +56,7 @@ public:
                position{position}, constant{constant}, linear{linear},
                quadratic{quadratic}
     {
+        this->enabled = true;
         this->type = POINT_LIGHT;
         this->ambient = ambient;
         this->diffuse = diffuse;
@@ -80,6 +83,7 @@ public:
     position{position},direction{direction}, constant{constant}, linear{linear},
     quadratic{quadratic}, cutOff{cutOff}, outerCutOff{outerCutOff}
     {
+        this->enabled = true;
         this->type = SPOT_LIGHT;
         this->ambient = ambient;
         this->diffuse = diffuse;
