@@ -81,7 +81,16 @@ void processInput(GLFWwindow *window) {
         }
         glReadPixels(xpos, 1080-ypos-1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &ClickedIndex);
         if(ClickedIndex > 0){
-            std::cout << "Clicked on object " << Names[ClickedIndex-1] << std::endl;
+            if(Names[ClickedIndex-1].find("fire") != std::string::npos){
+                if (gameState_ptr->fireplace_active)
+                {
+                    gameState_ptr->fireplace_active = false;
+                    gameState_ptr->lightsUsed = 2;
+                }else{
+                    gameState_ptr->fireplace_active = true;
+                    gameState_ptr->lightsUsed = 3;
+                }
+            }
         }
         gameState_ptr->mouseParameters.pressDelay = 0.2f;
     }
@@ -291,7 +300,7 @@ int main() {
                 for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
                     gamestate.lights[i]->setLightParam(i, *object->shader);
                 }
-                if(currNode->name.find("fire") != std::string::npos){
+                if(currNode->name.find("fire") != std::string::npos && gamestate.fireplace_active){
                     gamestate.drawFire(currNode->getTransform(t), &projectionMatrix, &cameraMatrix, (float)glfwGetTime());
                 }
                 if(currNode->name == "root"){

@@ -59,6 +59,7 @@ public:
     FogParams fogParams;
     ReloadParams reloadParams;
     TerrainParams terrainParams;
+    bool fireplace_active;
     std::vector<Light*> lights;
     std::vector<SceneObject*> objects;
     std::unordered_map<std::string,Shader*> shaders;

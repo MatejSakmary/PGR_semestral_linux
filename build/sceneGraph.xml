@@ -429,7 +429,7 @@
 									</Transform>
 									<Children></Children>
 								</Node>
-								<Node name="fireplace_palm_1" type="2">
+								<Node name="light_palm_1" type="2">
 									<SceneObject model="palm" shader="frag_light"/>
 									<Transform>
 										<Rotation x="270" y="0" z="0"/>
@@ -448,7 +448,7 @@
 										</Node>
 									</Children>
 								</Node>
-								<Node name="fireplace_palm_2" type="2">
+								<Node name="light_palm_2" type="2">
 									<SceneObject model="palm" shader="frag_light"/>
 									<Transform>
 										<Rotation x="270" y="20" z="40"/>

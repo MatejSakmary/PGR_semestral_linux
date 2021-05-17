@@ -6,7 +6,8 @@ GameState::GameState(std::string xmlPath)
 {
     reloadParams = ReloadParams({false, false, false, false});
     this->xmlPath = xmlPath;
-    lightsUsed = 1;
+    lightsUsed = 2;
+    fireplace_active = false;
     mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
                                      false, true});
     fogParams = FogParams({0.060, 0.08});
