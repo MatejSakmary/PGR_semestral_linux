@@ -7,8 +7,6 @@
 #include "imgui_impl_opengl3.h"
 
 #include <GLFW/glfw3.h>
-#include "shader.h"
-#include "model.h"
 #include "utils.h"
 #include "light.h"
 #include "game_state.h"
@@ -22,12 +20,12 @@
 
 #include "stb_image.h"
 
+static std::vector<std::string> Names;
 
 static float deltaTime = 0.0f;
 static float lastFrame = 0.0f;
 static float scale = 0.17;
 static float translation = 12;
-static float scaleCube = 150;
 
 static GameState* gameState_ptr = nullptr;
 static ImguiState* imguiState_ptr = nullptr;
@@ -71,13 +69,26 @@ void processInput(GLFWwindow *window) {
 
 //    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 //        glfwSetWindowShouldClose(window, true);
+    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    if(state == GLFW_PRESS && gameState_ptr->mouseParameters.pressDelay < 0){
+        unsigned int ClickedIndex;
+        double xpos, ypos;
+        if(!gameState_ptr->mouseParameters.mouseControl){
+            glfwGetCursorPos(window, &xpos, &ypos);
+        }else {
+            xpos = 1920/2;
+            ypos = 1080/2;
+        }
+        glReadPixels(xpos, 1080-ypos-1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &ClickedIndex);
+        if(ClickedIndex > 0){
+            std::cout << "Clicked on object " << Names[ClickedIndex-1] << std::endl;
+        }
+        gameState_ptr->mouseParameters.pressDelay = 0.2f;
+    }
 
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS &&
        (gameState_ptr->mouseParameters.pressDelay < 0)) {
-        if (gameState_ptr->mouseParameters.mouseControl)
-            std::cout << "mouse control is now enabled" << std::endl;
-        else
-            std::cout << "mouse control is now disabled" << std::endl;
+        if (!gameState_ptr->mouseParameters.mouseControl)
             gameState_ptr->mouseParameters.firstMouseInput = true;
 
         gameState_ptr->mouseParameters.pressDelay = 0.5f;
@@ -212,7 +223,10 @@ int main() {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearStencil(0);
+        glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        glEnable(GL_STENCIL_TEST);
 
         glm::mat4 cameraMatrix = gamestate.camera->getViewMatrix(t);
         glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.0f),
@@ -259,6 +273,8 @@ int main() {
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);
 
+        Names.clear();
+        int counter = 1;
         while(nodes.size() != 0){
             Node* currNode = nodes.front();
             nodes.pop();
@@ -283,6 +299,8 @@ int main() {
                     object->shader->setFloat("scale", gamestate.terrainParams.scale);
                 }
                 CHECK_GL_ERROR();
+                Names.push_back(currNode->name);
+                glStencilFunc(GL_ALWAYS, counter++, -1);
                 object->model->Draw(*object->shader);
                 CHECK_GL_ERROR();
             }

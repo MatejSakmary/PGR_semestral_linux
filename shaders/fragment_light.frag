@@ -111,12 +111,12 @@ void main()
 
 vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 cameraDirection){
 	float fogAmount = clamp(a * exp(-cameraPosition.y * b) * (1.0 -exp(-distance * cameraDirection.y * b))/cameraDirection.y,0.0,0.8);
-	vec3  fogColor = vec3(0.2, 0.25, 0.3);
+	vec3  fogColor = vec3(0.15, 0.22, 0.26);
 
     if(usedLights >= 2){
 		vec3 lightDirection = normalize(lights[1].position - cameraPosition);
 		float lightIntensity = max( dot( cameraDirection, lightDirection), 0.0);
-        fogColor = mix(vec3(0.2, 0.25, 0.3),
+        fogColor = mix(vec3(0.15, 0.22, 0.26),
 					   lights[1].diffuse ,
 						pow(lightIntensity,400));
 	}
