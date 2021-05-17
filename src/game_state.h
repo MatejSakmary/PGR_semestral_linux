@@ -98,4 +98,5 @@ private:
     void reloadLights();
     void prepareFireModel();
     Node* processAnimationNode(rapidxml::xml_node<>* animationNode, Node* parent, std::string name);
+    Node* processAnimationCurveNode(rapidxml::xml_node<>* animationNode, Node* parent, std::string name);
 };

@@ -59,6 +59,7 @@ public:
 };
 
 class AnimationCurveNode : public Node{
+public:
     AnimationCurveNode(Transform* start, Transform* end, Bezier* curve, Node* parent, std::vector<Node*> children, std::string name) :
                         Node(start, parent, std::move(children), std::move(name), CURVE_ANIMATION), end{end}, curve{curve}{};
     Bezier* curve;

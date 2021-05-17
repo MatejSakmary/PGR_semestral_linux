@@ -47,7 +47,7 @@ vec3 applyFog(vec3 originalColor, float distance, vec3 cameraPosition, vec3 came
             float lightIntensity = max( dot( cameraDirection, lightDirection), 0.0);
             fogColor = mix(fogColor,
             lights[i].diffuse ,
-            pow(lightIntensity,400));
+            pow(lightIntensity,800));
         }
     }
     return mix(originalColor, fogColor, fogAmount);
@@ -57,8 +57,8 @@ void main()
 {
     vec3 cameraDirection = normalize(cameraPosition - fragPosition);
     float distance = distance(vec3(0.0,0.0,0.0), fragPosition);
-    vec3 color = mix(vec3(texture(dayCubemap, TexCoords)),
-                     vec3(texture(nightCubemap, TexCoords)),
+    vec3 color = mix(vec3(texture(nightCubemap, TexCoords)),
+                     vec3(texture(dayCubemap, TexCoords)),
                      mixVal);
     color = applyFog(color, distance, cameraPosition, -cameraDirection);
     FragColor = vec4(color,1.0f);

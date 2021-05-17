@@ -248,7 +248,7 @@ int main() {
             gamestate.lights[i]->setLightParam(i, *gamestate.shaders.find("cubemap")->second);
         }
         glDepthMask(GL_FALSE);
-        cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime());
+        cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime()/4);
         glDepthMask(GL_TRUE);
         #pragma endregion
         /* objects rendering */

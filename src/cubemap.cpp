@@ -64,13 +64,13 @@ Cubemap::Cubemap(std::vector<std::string> nightSrc, std::vector<std::string> day
 void Cubemap::Draw(Shader &shader, float time) {
     shader.use();
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, nightTexID);
-    shader.setInt("nightCubemap", 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, dayTexID);
+    shader.setInt("dayCubemap", 0);
 
     CHECK_GL_ERROR();
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, dayTexID);
-    shader.setInt("dayCubemap", 1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, nightTexID);
+    shader.setInt("nightCubemap", 1);
 
     glm::mat4 rotationMat = glm::rotate(glm::mat4(1.0f), glm::radians(time), glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0), glm::vec3(scale, scale, scale));

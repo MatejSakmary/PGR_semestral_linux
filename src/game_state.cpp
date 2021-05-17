@@ -106,7 +106,7 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         std::string nodeName = childNode->first_attribute("name")->value();
         Transform* transform;
 
-        if(type != LINEAR_ANIMATION) {
+        if(type != LINEAR_ANIMATION && type != CURVE_ANIMATION) {
             /* get transform node NODE->TRANSFORM */
             rapidxml::xml_node<> *transformNode = childNode->first_node("Transform");
             /* get individual transforms from transform not NODE->TRANSFORM->ROTATION
@@ -167,6 +167,10 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
             childGraphNode = processAnimationNode(childNode, parentNode, nodeName);
             std::cout << "GAMESTATE::PROCESS_CHILDREN::Created node " << nodeName << " of type " << type << std::endl;
         }
+        else if (type == CURVE_ANIMATION){
+            childGraphNode = processAnimationCurveNode(childNode, parentNode, nodeName);
+            std::cout << "GAMESTATE::PROCESS_CHILDREN::Created node " << nodeName << " of type " << type << std::endl;
+        }
         /*HANDLE ERRORS --------------------------------------------------------------------------------------------- */
         else {
             std::cerr << "GAMESTATE::PROCESS_CHILDREN::Node " << nodeName << " has unknown type " << type << std::endl;
@@ -182,6 +186,42 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         finalChildren.push_back(childGraphNode);
     }
     return finalChildren;
+}
+
+Node *GameState::processAnimationCurveNode(rapidxml::xml_node<> *animationNode, Node *parent, std::string name) {
+    Node* returnNode;
+    std::cout << "here here 1" << std::endl;
+    rapidxml::xml_node<>* startNode = animationNode->first_node("Start");
+    std::cout << "here here 2" << std::endl;
+    rapidxml::xml_node<>* endNode = animationNode->first_node("End");
+    std::cout << "here here 3" << std::endl;
+    rapidxml::xml_node<>* controlNode1 = animationNode->first_node("Control1");
+    std::cout << "here here 4" << std::endl;
+    rapidxml::xml_node<>* controlNode2 = animationNode->first_node("Control2");
+    std::cout << "here here 5" << std::endl;
+    glm::vec3 start, end, control1, control2;
+
+    start = glm::vec3(std::stof(startNode->first_attribute("x")->value()),
+                     std::stof(startNode->first_attribute("y")->value()),
+                     std::stof(startNode->first_attribute("z")->value()));
+    std::cout << "here1" << std::endl;
+    end = glm::vec3(std::stof(endNode->first_attribute("x")->value()),
+                      std::stof(endNode->first_attribute("y")->value()),
+                      std::stof(endNode->first_attribute("z")->value()));
+    std::cout << "here2" << std::endl;
+    control1 = glm::vec3(std::stof(controlNode1->first_attribute("x")->value()),
+                      std::stof(controlNode1->first_attribute("y")->value()),
+                      std::stof(controlNode1->first_attribute("z")->value()));
+    std::cout << "here3" << std::endl;
+    control2 = glm::vec3(std::stof(controlNode2->first_attribute("x")->value()),
+                      std::stof(controlNode2->first_attribute("y")->value()),
+                      std::stof(controlNode2->first_attribute("z")->value()));
+    std::cout << "here4" << std::endl;
+    auto* startTransform = new Transform(start, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
+    auto* endTransform = new Transform(end, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
+    auto* bezier = new Bezier(start, end, control1, control2);
+    returnNode = new AnimationCurveNode(startTransform, endTransform, bezier, parent, std::vector<Node*>{}, name);
+    return returnNode;
 }
 
 Node* GameState::processAnimationNode(rapidxml::xml_node<>* animationNode, Node* parent, std::string name){
@@ -614,6 +654,7 @@ void GameState::drawFire(glm::mat4 transform, glm::mat4* projectionMatrix, glm::
     fireLightShader.setMat4fv("PVMmatrix", (*projectionMatrix) * (*cameraMatrix) * fireTransformMat);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
 
 
 

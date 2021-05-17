@@ -13,7 +13,9 @@ glm::mat4 Node::getTransform(float t) {
     {
         if(movingParent->type == LINEAR_ANIMATION){
             transformList.push_back(((AnimationLinearNode*)movingParent)->getTransformMat(t));
-        }else{
+        }else if(movingParent->type == CURVE_ANIMATION){
+            transformList.push_back(((AnimationCurveNode*)movingParent)->getTransformMat(t));
+        }else {
             transformList.push_back(movingParent->transform->getTransformMat(false));
         }
         movingParent = movingParent->parent;
@@ -24,6 +26,8 @@ glm::mat4 Node::getTransform(float t) {
     }
     if(this->type == LINEAR_ANIMATION){
         finalTransform *= ((AnimationLinearNode*)this)->getTransformMat(t);
+    }else if(this->type == CURVE_ANIMATION){
+        finalTransform *= ((AnimationCurveNode*)this)->getTransformMat(t);
     }else{
         finalTransform*= this->transform->getTransformMat();
     }
@@ -52,4 +56,9 @@ glm::mat4 AnimationLinearNode::getTransformMat(float t) {
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), finalScale);
 
     return translation * rotation * scale;
+}
+
+glm::mat4 AnimationCurveNode::getTransformMat(float t) {
+    glm::mat4 position = glm::translate(glm::mat4(1.0f), curve->getPosition(t));
+    return position;
 }
