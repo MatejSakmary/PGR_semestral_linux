@@ -11,7 +11,6 @@ void DirectionalLight::setLightParam(int index, Shader& shader) {
     shader.setVec3(prefix + "ambient", this->ambient);
     shader.setVec3(prefix + "diffuse", this->diffuse);
     shader.setVec3(prefix + "specular", this->specular);
-    CHECK_GL_ERROR();
 }
 
 void PointLight::setLightParam(int index, Shader &shader) {

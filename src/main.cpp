@@ -169,23 +169,6 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    Quaternion* qat1 = new Quaternion(0.0, 77, 0);
-    Quaternion* qat2 = new Quaternion(22, 0.0, 0.0);
-    Quaternion* qat3 = new Quaternion(0.0, 0.0, 44);
-    Quaternion quat3 = *qat1 * *qat2 * *qat3 ;
-    glm::mat4 rot1 = glm::rotate(glm::mat4(1.0f), glm::radians(77.0f) , glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glm::mat4 test = glm::mat4(1.0f);
-    test[0][0] = 2;
-    test[0][1] = 2;
-    test[0][2] = 2;
-    std::cout << glm::to_string(test) << std::endl;
-    rot1 = glm::rotate(rot1, glm::radians(22.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    rot1 = glm::rotate(rot1, glm::radians(44.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    std::cout << glm::to_string((quat3.getRotMatrix())) << std::endl;
-    std::cout << glm::to_string(rot1) << std::endl;
-
     GameState gamestate = GameState("sceneGraph.xml");
     ImguiState imguiState = ImguiState();
     imguiState_ptr = &imguiState;
@@ -220,6 +203,9 @@ int main() {
         PointLight* point = (PointLight*)gamestate.lights[1];
         point->linear = (sin(glfwGetTime())+1)/10;
 
+        SpotLight* spot = (SpotLight*)gamestate.lights[3];
+        spot->position =  gamestate.ufoNode->getTransform(t) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        spot->direction = glm::mat3(gamestate.ufoNode->getTransform(t)) * glm::vec3(0.0f, 0.0f, -1.0f);
         processInput(window);
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -255,6 +241,12 @@ int main() {
         }
         /* skybox rendering ---------------------------------*/
         #pragma region skybox
+        gamestate.shaders.find("cubemap")->second->use();
+        gamestate.shaders.find("cubemap")->second->setInt("usedLights", gamestate.lightsUsed);
+        CHECK_GL_ERROR();
+        for(unsigned int i = 0; i < gamestate.lightsUsed; i++){
+            gamestate.lights[i]->setLightParam(i, *gamestate.shaders.find("cubemap")->second);
+        }
         glDepthMask(GL_FALSE);
         cubemap.Draw(*gamestate.shaders.find("cubemap")->second, (float)glfwGetTime());
         glDepthMask(GL_TRUE);

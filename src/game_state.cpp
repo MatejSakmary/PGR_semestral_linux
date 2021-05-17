@@ -175,9 +175,10 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         rapidxml::xml_node<> *childrensNode = childNode->first_node("Children");
         /* recursively process children nodes */
         childGraphNode->addChildren(processChildren(childGraphNode,childrensNode));
-//        if(nodeName == "UFO"){
-//            ufoNode = childGraphNode;
-//        }
+        if(nodeName == "UFO"){
+            ufoNode = childGraphNode;
+            std::cout << "found ufo node" << std::endl;
+        }
         finalChildren.push_back(childGraphNode);
     }
     return finalChildren;
