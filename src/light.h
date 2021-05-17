@@ -63,6 +63,7 @@ public:
 };
 
 class SpotLight : public Light{
+public:
     glm::vec3 direction;
     glm::vec3 position;
 

@@ -54,12 +54,15 @@ class GameState{
 public:
     int lightsUsed;
     float deltaTime;
+    bool fireplace_active;
+
     Camera *camera;
     MouseParameters mouseParameters;
     FogParams fogParams;
     ReloadParams reloadParams;
     TerrainParams terrainParams;
-    bool fireplace_active;
+
+    Node* ufoNode;
     std::vector<Light*> lights;
     std::vector<SceneObject*> objects;
     std::unordered_map<std::string,Shader*> shaders;

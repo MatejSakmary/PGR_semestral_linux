@@ -20,12 +20,13 @@
 			<Position x="-38.73" y="-13.2" z="-11.0"/>
 			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
 		</Light>
-		<Light type="Point">
+		<Light type="Spotlight">
 			<Ambient r="0" g="0" b="0"/>
-			<Diffuse r="0.0" g="0.0" b="0.8"/>
+			<Diffuse r="1.0" g="0.0" b="0.0"/>
 			<Specular r="0.0" g="0.0" b="0.8"/>
-			<Position x="18.8" y="-5.6" z="-18.4"/>
-			<Params constant="0.2" linear="0.09" quadratic="0.012"/>
+			<Position x="0.0" y="0.0" z="0.0"/>
+			<Direction x="0.0" y="-1.0" z="0.0"/>
+			<Params constant="1.0" linear="0.002" quadratic="0.0012" cutOff="0.906" outerCutOff="0.819"/>
 		</Light>
 	</Lights>
 	<!--	Note -> only the first terrain object will be read and imported -->
@@ -46,6 +47,7 @@
 		<Model name="rock2" path="../data/rocks/rocks_model/rock_01_b.fbx"/>
 		<Model name="rock3" path="../data/rocks/rocks_model/rock_01_c.fbx"/>
 		<Model name="fireplace" path="../data/fire/fireplace_model/fireplace.obj"/>
+		<Model name="UFO" path="../data/UFO/UFO_model/Low_poly_UFO.FBX"/>
 	</Models>
 	<Shaders>
 		<Shader name="frag_light" vert_path="../shaders/fragment_light.vert" frag_path="../shaders/fragment_light.frag"/>
@@ -142,6 +144,57 @@
 						<Scale x="0" y="0" z="0"/>
 					</Transform>
 					<Children>
+						<Node name="UFO_animation" type="3">
+							<Start>
+								<Rotation x="-100" y="0" z="0"/>
+								<Position x="40" y="32" z="50"/>
+								<Scale x="1" y="1" z="1"/>
+							</Start>
+							<End>
+								<Rotation x="-80" y="0" z="0"/>
+								<Position x="40" y="32" z="-50"/>
+								<Scale x="1" y="1" z="1"/>
+							</End>
+                            <Children>
+								<Node name="UFO_animation_rotation" type="3">
+								<Start>
+									<Rotation x="0" y="0" z="0"/>
+									<Position x="0" y="0" z="0"/>
+									<Scale x="1" y="1" z="1"/>
+								</Start>
+								<End>
+									<Rotation x="0" y="0" z="240"/>
+									<Position x="0" y="0" z="0"/>
+									<Scale x="1" y="1" z="1"/>
+								</End>
+								<Children>
+									<Node name="UFO_animation_up_down" type="3">
+										<Start>
+											<Rotation x="0" y="0" z="0"/>
+											<Position x="0" y="0" z="0"/>
+											<Scale x="1" y="1" z="1"/>
+										</Start>
+										<End>
+											<Rotation x="0" y="0" z="0"/>
+											<Position x="0" y="0" z="20"/>
+											<Scale x="1" y="1" z="1"/>
+										</End>
+									<Children>
+										<Node name="UFO" type="2">
+											<SceneObject model="UFO" shader="frag_light"/>
+											<Transform>
+												<Rotation x="0" y="0" z="0"/>
+												<Position x="0" y="0" z="0"/>
+												<Scale x="0.3" y="0.3" z="0.3"/>
+											</Transform>
+											<Children></Children>
+										</Node>
+									</Children>
+									</Node>
+								</Children>
+								</Node>
+							</Children>
+						</Node>
 						<Node name="palms_around_portal_origin" type="1">
 							<Transform>
 								<Rotation x="0" y="90" z="0"/>

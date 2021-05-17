@@ -175,6 +175,9 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         rapidxml::xml_node<> *childrensNode = childNode->first_node("Children");
         /* recursively process children nodes */
         childGraphNode->addChildren(processChildren(childGraphNode,childrensNode));
+//        if(nodeName == "UFO"){
+//            ufoNode = childGraphNode;
+//        }
         finalChildren.push_back(childGraphNode);
     }
     return finalChildren;
@@ -344,6 +347,25 @@ unsigned int GameState::loadLights() {
                                             std::stof(directionNode->first_attribute("y")->value()),
                                             std::stof(directionNode->first_attribute("z")->value()));
             lights.push_back(new DirectionalLight(ambient, diffuse, specular, direction));
+        }else if(type == SPOT_LIGHT){
+            rapidxml::xml_node<> *positionNode =  lightNode->first_node("Position");
+            rapidxml::xml_node<> *directionNode = lightNode->first_node("Direction");
+            rapidxml::xml_node<> *paramNode = lightNode->first_node("Params");
+
+            glm::vec3 position = glm::vec3(std::stof(positionNode->first_attribute("x")->value()),
+                                           std::stof(positionNode->first_attribute("y")->value()),
+                                           std::stof(positionNode->first_attribute("z")->value()));
+
+            glm::vec3 direction = glm::vec3(std::stof(directionNode->first_attribute("x")->value()),
+                                            std::stof(directionNode->first_attribute("y")->value()),
+                                            std::stof(directionNode->first_attribute("z")->value()));
+            float constant = std::stof(paramNode->first_attribute("constant")->value());
+            float linear = std::stof(paramNode->first_attribute("linear")->value());
+            float quadratic = std::stof(paramNode->first_attribute("quadratic")->value());
+            float cutOff = std::stof(paramNode->first_attribute("cutOff")->value());
+            float outerCutOff = std::stof(paramNode->first_attribute("outerCutOff")->value());
+            lights.push_back(new SpotLight(ambient, diffuse, specular, position, direction, constant,
+                                           linear, quadratic, cutOff, outerCutOff));
         }
         foundObjectsCount++;
     }
