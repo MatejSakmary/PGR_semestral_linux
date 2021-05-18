@@ -44,6 +44,9 @@ typedef struct{
 
 typedef struct{
    float scale;
+   unsigned int heightTexID;
+    unsigned int normalTexID;
+    unsigned int diffuseTexID;
    unsigned int resolution;
    std::string heightTexPath;
    std::string normalTexPath;

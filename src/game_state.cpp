@@ -4,6 +4,8 @@
 #include "game_state.h"
 GameState::GameState(std::string xmlPath)
 {
+    rootNode = nullptr;
+    terrainParams.heightTexID = 1892;
     reloadParams = ReloadParams({false, false, false, false});
     this->xmlPath = xmlPath;
     mouseParameters = MouseParameters({0.0, 0.0f, -1.0f,
@@ -188,33 +190,24 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
 
 Node *GameState::processAnimationCurveNode(rapidxml::xml_node<> *animationNode, Node *parent, std::string name) {
     Node* returnNode;
-    std::cout << "here here 1" << std::endl;
     rapidxml::xml_node<>* startNode = animationNode->first_node("Start");
-    std::cout << "here here 2" << std::endl;
     rapidxml::xml_node<>* endNode = animationNode->first_node("End");
-    std::cout << "here here 3" << std::endl;
     rapidxml::xml_node<>* controlNode1 = animationNode->first_node("Control1");
-    std::cout << "here here 4" << std::endl;
     rapidxml::xml_node<>* controlNode2 = animationNode->first_node("Control2");
-    std::cout << "here here 5" << std::endl;
     glm::vec3 start, end, control1, control2;
 
     start = glm::vec3(std::stof(startNode->first_attribute("x")->value()),
                      std::stof(startNode->first_attribute("y")->value()),
                      std::stof(startNode->first_attribute("z")->value()));
-    std::cout << "here1" << std::endl;
     end = glm::vec3(std::stof(endNode->first_attribute("x")->value()),
                       std::stof(endNode->first_attribute("y")->value()),
                       std::stof(endNode->first_attribute("z")->value()));
-    std::cout << "here2" << std::endl;
     control1 = glm::vec3(std::stof(controlNode1->first_attribute("x")->value()),
                       std::stof(controlNode1->first_attribute("y")->value()),
                       std::stof(controlNode1->first_attribute("z")->value()));
-    std::cout << "here3" << std::endl;
     control2 = glm::vec3(std::stof(controlNode2->first_attribute("x")->value()),
                       std::stof(controlNode2->first_attribute("y")->value()),
                       std::stof(controlNode2->first_attribute("z")->value()));
-    std::cout << "here4" << std::endl;
     auto* startTransform = new Transform(start, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
     auto* endTransform = new Transform(end, glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 0.0, 0.0));
     auto* bezier = new Bezier(start, end, control1, control2);
@@ -514,12 +507,15 @@ SceneObject* GameState::prepareTerrainModel() {
             indices.push_back(i3);
         }
     }
-    auto heightTexID = loadTexture(terrainParams.heightTexPath.c_str());
-    auto normalTexID = loadTexture(terrainParams.normalTexPath.c_str());
-    auto diffuseTexID = loadTexture(terrainParams.diffuseTexPath.c_str());
-    Texture heightTex{heightTexID, "texture_height", terrainParams.heightTexPath};
-    Texture normalTex{normalTexID, "texture_normal", terrainParams.normalTexPath};
-    Texture diffuseTex{diffuseTexID, "texture_diffuse", terrainParams.diffuseTexPath};
+    if(terrainParams.heightTexID == 1892){
+        std::cout << "loading texture" << std::endl;
+        terrainParams.heightTexID = loadTexture(terrainParams.heightTexPath.c_str());
+        terrainParams.normalTexID = loadTexture(terrainParams.normalTexPath.c_str());
+        terrainParams.diffuseTexID = loadTexture(terrainParams.diffuseTexPath.c_str());
+    }
+    Texture heightTex{terrainParams.heightTexID, "texture_height", terrainParams.heightTexPath};
+    Texture normalTex{terrainParams.normalTexID, "texture_normal", terrainParams.normalTexPath};
+    Texture diffuseTex{terrainParams.diffuseTexID, "texture_diffuse", terrainParams.diffuseTexPath};
     textures.push_back(heightTex);
     textures.push_back(normalTex);
     textures.push_back(diffuseTex);
