@@ -20,6 +20,7 @@ private:
     Bezier* dynamicCurve;
 
 public:
+    glm::vec3 portalPosition;
 	Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 m_up, Bezier* curve);
 	void checkPosition();
 	void forward(float deltaTime);

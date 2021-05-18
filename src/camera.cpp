@@ -31,20 +31,23 @@ glm::mat4 Camera::getViewMatrix(float t = 0) {
     
 void Camera::forward(float deltaTime) {
     inDynamic = false;
-    checkPosition();
 	this->m_position += m_front * m_speed * deltaTime;
+    checkPosition();
 }
 void Camera::back(float deltaTime) {
     inDynamic = false;
 	this->m_position -= m_front * m_speed * deltaTime;
+    checkPosition();
 }
 void Camera::left(float deltaTime) {
     inDynamic = false;
 	this->m_position -= glm::normalize(glm::cross(m_front, m_up)) * m_speed * deltaTime;
+    checkPosition();
 }
 void Camera::right(float deltaTime) {
     inDynamic = false;
 	this->m_position += glm::normalize(glm::cross(m_front, m_up)) * m_speed * deltaTime;
+    checkPosition();
 }
 void Camera::updateFrontVec(float xoffset, float yoffset) {
 	yaw += sensitivity * xoffset;
@@ -57,11 +60,13 @@ void Camera::updateFrontVec(float xoffset, float yoffset) {
 void Camera::up(float deltaTime)
 {
 	this->m_position += m_up * m_speed * deltaTime;
+    checkPosition();
 }
 
 void Camera::down(float deltaTime)
 {
 	this->m_position -= m_up * m_speed * deltaTime;
+    checkPosition();
 }
 
 void Camera::switchToStatic(int i) {
@@ -103,6 +108,10 @@ void Camera::switchToDynamic() {
 }
 
 void Camera::checkPosition() {
+    if(glm::abs(glm::distance(portalPosition, m_position)) < 30){
+        glm::vec3 portalToCamVec = glm::normalize(m_position - portalPosition);
+        m_position = portalPosition + (30.0f * portalToCamVec);
+    }
     if(m_position.x > 100 ){
         m_position.x = 100;
     }

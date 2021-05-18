@@ -82,6 +82,7 @@ private:
     std::string xmlPath;
     std::string xmlContent;
 
+    Node* portalNode;
     Fire fire;
     unsigned int loadShaders();
     unsigned int loadModels();

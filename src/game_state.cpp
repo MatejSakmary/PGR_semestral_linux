@@ -21,7 +21,7 @@ GameState::GameState(std::string xmlPath)
                         glm::vec3(0.0f, 0.0f, -1.0f),
                         glm::vec3(0.0f, 1.0f, 0.0f),
                         bezier);
-
+    camera->switchToStatic(2);
     gameScene = new rapidxml::xml_document<>();
 
     /* read xml doc for parsing */
@@ -41,6 +41,8 @@ GameState::GameState(std::string xmlPath)
     loadSceneGraph();
     prepareFireModel();
 
+    glm::vec4 portalPosition = portalNode->getTransform(0) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f) ;
+    camera->portalPosition = glm::vec3(portalPosition) + glm::vec3(0.0f, 20.0f, 0.0f);
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << shaderCnt << " shaders" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << modelsCnt << " models" << std::endl;
     std::cout << "GAMESTATE::CONSTRUCTOR::Loaded " << objectsCnt << " objects" << std::endl;
@@ -181,7 +183,8 @@ std::vector<Node*> GameState::processChildren(Node *parentNode, rapidxml::xml_no
         childGraphNode->addChildren(processChildren(childGraphNode,childrensNode));
         if(nodeName == "UFO"){
             ufoNode = childGraphNode;
-            std::cout << "found ufo node" << std::endl;
+        } else if(nodeName == "portal"){
+            portalNode = childGraphNode;
         }
         finalChildren.push_back(childGraphNode);
     }
