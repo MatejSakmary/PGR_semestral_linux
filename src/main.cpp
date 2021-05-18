@@ -191,6 +191,8 @@ int main() {
     nightCubemapPaths.emplace_back("../data/envmap_miramar/miramar_ft.tga");
     Cubemap cubemap = Cubemap(nightCubemapPaths, dayCubemapPaths, 150);
     CHECK_GL_ERROR();
+    PrepareHandLoadedObject();
+    CHECK_GL_ERROR();
 
     /* Main render loop -------------------------------------------------------------*/
     while (!glfwWindowShouldClose(window)) {
@@ -270,6 +272,20 @@ int main() {
 
         /* objects rendering ----------------------------------------------------------------------------*/
         #pragma region objects
+        /* hand drawn object */
+        Shader* rockShader = gamestate.shaders.find("frag_light")->second;
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-100, 5.9, -100));
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.01, 0.01, 0.01));
+        rockShader->use();
+        rockShader->setMat4fv("PVMmatrix", projectionMatrix * cameraMatrix * model);
+        rockShader->setMat4fv("Model", model);
+        rockShader->setMat4fv("NormalModel", glm::transpose(glm::inverse(model)));
+        rockShader->setBool("normalTexUsed", false);
+        rockShader->setFloat("material.shininess", 30.0f);
+        rockShader->setInt("usedLights", gamestate.lightsUsed);
+        DrawHandLoadedObject(rockShader);
         /* This is standard Stack parse of a tree*/
         std::queue<Node*> nodes;
         nodes.push(gamestate.rootNode);

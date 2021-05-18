@@ -2,7 +2,41 @@
 // Created by matejs on 05/05/2021.
 //
 #include "utils.h"
+void PrepareHandLoadedObject(){
+    rockTexID = loadTexture("../data/handLoadedRock/Rock_Base_Color.jpg");
+    CHECK_GL_ERROR();
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float) * rockNVertices, rockVertices, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * sizeof(unsigned) * rockNTriangles, rockTriangles, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8* sizeof(float), 0);
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8* sizeof(float), (void*)(3*sizeof(float)));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8* sizeof(float), (void*)(6*sizeof(float)));
+
+    CHECK_GL_ERROR();
+    glBindVertexArray(0);
+}
+
+void DrawHandLoadedObject(Shader* shader){
+    shader->use();
+    glActiveTexture(GL_TEXTURE0);
+    shader->setInt("material.texture_diffuse1", 0);
+    glBindTexture(GL_TEXTURE_2D, rockTexID);
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 3*rockNTriangles, GL_UNSIGNED_INT, 0);
+}
 void checkGLError(const char *where = 0, int line = 0) {
     GLenum err = glGetError();
     if (err == GL_NONE)
