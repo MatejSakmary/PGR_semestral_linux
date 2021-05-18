@@ -31,6 +31,7 @@ glm::mat4 Camera::getViewMatrix(float t = 0) {
     
 void Camera::forward(float deltaTime) {
     inDynamic = false;
+    checkPosition();
 	this->m_position += m_front * m_speed * deltaTime;
 }
 void Camera::back(float deltaTime) {
@@ -99,4 +100,25 @@ glm::vec3 Camera::getFront() {
 
 void Camera::switchToDynamic() {
     inDynamic = true;
+}
+
+void Camera::checkPosition() {
+    if(m_position.x > 100 ){
+        m_position.x = 100;
+    }
+    if(m_position.x < -100 ){
+        m_position.x = -100;
+    }
+    if(m_position.y > 50){
+        m_position.y = 50;
+    }
+    if(m_position.y < -5 ){
+        m_position.y = -5;
+    }
+    if(m_position.z > 100 ){
+        m_position.z = 100;
+    }
+    if(m_position.z < -100 ){
+        m_position.z = -100;
+    }
 }
