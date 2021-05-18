@@ -70,15 +70,25 @@ public:
     std::unordered_map<std::string,Shader*> shaders;
     std::unordered_map<std::string,Model*> models;
 
-    /* experimental */
     Node* rootNode;
     rapidxml::xml_document<>* gameScene;
     explicit GameState(std::string xmlPath);
+    /**
+     * Processes Reload params and executes proper action required
+     * Note -> at least one parameter in reload params must be set to true for this to do anything
+     */
     void reloadHandle();
+    /**
+     * Draw two 90 deg rotated animated fire sprites
+     * @param transform position where fire sprites should be rendered
+     * @param projectionMatrix current projection matrix
+     * @param cameraMatrix current view matrix
+     * @param time this parameter controls the animation frame
+     */
     void drawFire(glm::mat4 transform,glm::mat4* projectionMatrix, glm::mat4* cameraMatrix,  float time);
 
 private:
-    // this is needed by rapidxml
+    // this is needed by rapidxml -> as long as rapidxml document exists so must the original string
     std::string xmlPath;
     std::string xmlContent;
 

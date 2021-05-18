@@ -6,8 +6,6 @@
 glm::vec3 Bezier::getPosition(float t) {
     glm::vec3 position;
     if(!cubic){
-        /* This really should have been avoided if GLM knew how to
-         * multiply vector with scalar */
         position = (float)(glm::pow(1 - t, 2)) * from +
                    (float)((1 - t) * 2 * t) * firstControlPoint +
                    (float)(t * t) * to;

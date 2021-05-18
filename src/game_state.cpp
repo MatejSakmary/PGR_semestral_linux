@@ -576,9 +576,6 @@ void GameState::drawFire(glm::mat4 transform, glm::mat4* projectionMatrix, glm::
     Shader fireLightShader = *shaders.find("fire")->second;
     fireLightShader.use();
     glm::mat4 fireTransformMat = transform;
-//    glm::mat4 fireTransformMat = glm::translate(glm::mat4(1.0f),*transform);
-//    fireTransformMat = glm::translate(fireTransformMat,glm::vec3(0.0f, 0.5f, 0.0f));
-//    fireTransformMat = glm::scale(fireTransformMat, glm::vec3(0.5, 0.5, 0.5));
     fireLightShader.setMat4fv("PVMmatrix", (*projectionMatrix) * (*cameraMatrix) * fireTransformMat);
     fireLightShader.setInt("frame", (int)(12 * time)%200);
     glBindVertexArray(fire.VAO);

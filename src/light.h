@@ -22,6 +22,12 @@ public:
     glm::vec3 ambient{};
     glm::vec3 diffuse{};
     glm::vec3 specular{};
+    /**
+     * Set appropriate light parameters in provided shader
+     * Note -> My shaders have an array of 8 lights, this will set the lights[index] parameters
+     * @param index index of the light in shader lights array
+     * @param shader shader whose values are to be set
+     */
     virtual void setLightParam(int index, Shader& shader) = 0;
     virtual ~Light()= default;
 };

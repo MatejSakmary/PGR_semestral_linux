@@ -31,12 +31,21 @@ public:
     std::vector<Node*> children;
     std::string name;
 
+    /**
+     *
+     * @param transform position of the node
+     * @param parent parent of this node
+     * @param children vector of node pointers
+     * @param name
+     * @param type see NodeType Enum
+     */
     Node(Transform* transform, Node* parent, std::vector<Node*> children, std::string name ,NodeType type = PURE_TRANSFORM) :
          type{type}, transform{transform}, parent{parent}, children{std::move(children)}, name{std::move(name)}{};
     glm::mat4 getTransform(float t);
     void addChildren(std::vector<Node*> children);
 };
 
+/*TODO: Implement light nodes*/
 class LightNode : public Node{
 public:
     LightNode(Transform* transform, Node* parent, std::vector<Node*> children, Light* light, std::string name) :

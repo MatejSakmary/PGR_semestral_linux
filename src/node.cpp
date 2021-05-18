@@ -8,6 +8,7 @@ glm::mat4 Node::getTransform(float t) {
     std::vector<glm::mat4> transformList;
     glm::mat4 finalTransform = glm::mat4(1.0f);
 
+    /*Walk through through the node tree up to root and collect transform matrices */
     Node* movingParent = this->parent;
     while(movingParent != nullptr)
     {
@@ -21,9 +22,11 @@ glm::mat4 Node::getTransform(float t) {
         movingParent = movingParent->parent;
     }
 
+    /* Apply all the transforms in the order root->firstChild->....*/
     for(int i = transformList.size(); i > 0; i--){
         finalTransform *= transformList[i-1];
     }
+    /* Finally apply my own transformation */
     if(this->type == LINEAR_ANIMATION){
         finalTransform *= ((AnimationLinearNode*)this)->getTransformMat(t);
     }else if(this->type == CURVE_ANIMATION){
@@ -59,6 +62,7 @@ glm::mat4 AnimationLinearNode::getTransformMat(float t) {
 }
 
 glm::mat4 AnimationCurveNode::getTransformMat(float t) {
+    /* get required position from the Bezier curve */
     glm::mat4 position = glm::translate(glm::mat4(1.0f), curve->getPosition(t));
     return position;
 }

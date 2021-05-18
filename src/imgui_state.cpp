@@ -6,7 +6,7 @@
 
 void ImguiState::ImguiDraw(GameState &gameState)
 {
-    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+    ImGui::Begin("PGR SEMESTRAL");
 
     if(ImGui::Button("Reload Shaders")){ gameState.reloadParams.reloadShaders = true;}
     ImGui::SameLine();
@@ -19,7 +19,8 @@ void ImguiState::ImguiDraw(GameState &gameState)
     if(ImGui::Button("Camera to Dynamic")){gameState.camera->switchToDynamic();}
     ImGui::Text("use WASD to move around");
     ImGui::Text("use SPACE to fly up CTRL to fly downwards");
-    ImGui::Text("press \"Q\" to enable cursor and disable mouse control");  // Display some text (you can use a format strings too)
+    ImGui::Text("press \"Q\" to enable cursor and disable mouse control");
+    /* Open or close individual sub-windows */
     ImGui::Checkbox("Camera Parameters", &showCamWindow);
     ImGui::Checkbox("Light Parameters", &showLightsWindow);
     ImGui::Checkbox("Objects Parameters", &showObjectsWindow);
@@ -39,7 +40,7 @@ void ImguiState::ImguiDraw(GameState &gameState)
     // 3. Show another simple window.
     if (showCamWindow) {
         glm::vec3 cameraPos = gameState.camera->getPos();
-        ImGui::Begin("Camera Parameters",&showCamWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Begin("Camera Parameters",&showCamWindow);
         if (ImGui::Button("Close")) { showCamWindow = false; }
         ImGui::Text("Camera position is");
         ImGui::Text("x: %f", cameraPos.x);
@@ -65,17 +66,9 @@ void ImguiState::ImguiDraw(GameState &gameState)
                nodes.push(child);
            }
         }
-//        for(unsigned int i = 0; i < gameState.objects.size(); i++)
-//        {
-//            SceneObject& currObj = *gameState.objects[i];
-//            if(ImGui::CollapsingHeader(("Object " + std::to_string(i)).c_str())){
-//                ImGui::SliderFloat3(("Position_" + std::to_string(i)).c_str(), (float*) &currObj.transform->position, -50.0f, 50.0f);
-//                ImGui::SliderFloat3(("Rotation_" + std::to_string(i)).c_str(), (float*) &currObj.transform->rotation,.0f, 360.0f);
-//                ImGui::SliderFloat3(("Scale_" + std::to_string(i)).c_str(), (float*) &currObj.transform->scale,0.0f, 1.0f);
-//            }
-//        }
         ImGui::End();
     }
+
     /* lights prop */
     if (showLightsWindow) {
         ImGui::Begin("Lights Properties", &showLightsWindow);

@@ -14,6 +14,10 @@
 class ImguiState {
 public:
     ImguiState():showCamWindow{false}, showLightsWindow{false}, showObjectsWindow{false}{};
+    /**
+     * Draw Gui
+     * @param gameState All parameters are read from here
+     */
     void ImguiDraw(GameState& gameState);
 
 private:

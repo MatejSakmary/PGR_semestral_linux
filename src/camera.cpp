@@ -13,7 +13,6 @@ Camera::Camera(glm::vec3 position, glm::vec3 direction, glm::vec3 up, Bezier* cu
 }
 
 glm::mat4 Camera::getViewMatrix(float t = 0) {
-	glm::mat4* view = new glm::mat4();
 	glm::vec3 direction;
 
 	if(inDynamic){
@@ -108,10 +107,15 @@ void Camera::switchToDynamic() {
 }
 
 void Camera::checkPosition() {
+    /* If the direction to portal is less than 30 don't move closer*/
     if(glm::abs(glm::distance(portalPosition, m_position)) < 30){
+        /*Get the vector pointing from portal origin to camera and set camera position
+         * to be portalOrigin + this vector -> always moves camera to corresponding position
+         * on the collider sphere*/
         glm::vec3 portalToCamVec = glm::normalize(m_position - portalPosition);
         m_position = portalPosition + (30.0f * portalToCamVec);
     }
+    /*Check map bounds-> if camera tries to go outside of the map snap it back in*/
     if(m_position.x > 100 ){
         m_position.x = 100;
     }
